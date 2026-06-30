@@ -1,0 +1,7 @@
+node_modules/
+dist/
+data/db.json
+generated_pdfs/
+*.log
+test-results/
+.env

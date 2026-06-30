@@ -1,0 +1,22 @@
+{
+  "authDefault": {
+    "passed": true,
+    "details": "Logged in successfully with admin/med1234. App shell is visible, login page is hidden."
+  },
+  "authUpdated": {
+    "passed": true,
+    "details": "Successfully verified that old credentials fail and updated credentials work."
+  },
+  "themeSwitching": {
+    "passed": false,
+    "details": "clinic-green: fail (data-theme expected \"clinic-green\", got \"null\". Classes on body: []); soft-blue: fail (data-theme expected \"soft-blue\", got \"null\". Classes on body: [theme-soft-blue]); dark-mode: fail (data-theme expected \"dark-mode\", got \"null\". Classes on body: [theme-dark]); warm-pink: fail (data-theme expected \"warm-pink\", got \"null\". Classes on body: [theme-warm-pink])"
+  },
+  "cssRulesMatch": {
+    "passed": false,
+    "details": "style.css is missing data-theme rules for: clinic-green, soft-blue, dark-mode, warm-pink"
+  },
+  "credentialsPersistence": {
+    "passed": false,
+    "details": "Settings were saved to the hardcoded data/db.json instead of the path in process.env.CLINIC_DB_PATH/DB_PATH."
+  }
+}

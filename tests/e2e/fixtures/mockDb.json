@@ -1,0 +1,104 @@
+{
+  "settings": {
+    "username": "admin",
+    "password": "med1234",
+    "clinicName": "Parinda Clinic",
+    "clinicHeader": "Parinda Clinic - Premium Medical Care",
+    "theme": "clinic-green"
+  },
+  "patients": [
+    {
+      "hn": "HN690001",
+      "name": "Somsri Rakdee",
+      "dob": "1985-05-12",
+      "gender": "Female",
+      "phone": "0812345678",
+      "allergies": "Penicillin"
+    },
+    {
+      "hn": "HN690002",
+      "name": "Sombat Jaidee",
+      "dob": "1978-11-23",
+      "gender": "Male",
+      "phone": "0898765432",
+      "allergies": "None"
+    }
+  ],
+  "products": [
+    {
+      "id": "prod-001",
+      "name": "Paracetamol 500mg",
+      "price": 50,
+      "stock": 200,
+      "minStockAlert": 50,
+      "unit": "tablet"
+    },
+    {
+      "id": "prod-002",
+      "name": "Amoxicillin 250mg",
+      "price": 120,
+      "stock": 150,
+      "minStockAlert": 30,
+      "unit": "capsule"
+    },
+    {
+      "id": "prod-003",
+      "name": "Cough Syrup 60ml",
+      "price": 80,
+      "stock": 25,
+      "minStockAlert": 30,
+      "unit": "bottle"
+    }
+  ],
+  "visits": [
+    {
+      "id": "visit-1001",
+      "hn": "HN690001",
+      "date": "2026-06-25",
+      "vitals": {
+        "bp": "120/80",
+        "hr": 72,
+        "temp": 36.8,
+        "weight": 65,
+        "height": 165,
+        "bmi": 23.88
+      },
+      "symptoms": "Fever and cough for 2 days",
+      "diagnosis": "Common cold",
+      "prescriptions": [
+        {
+          "productId": "prod-001",
+          "quantity": 10,
+          "price": 50
+        }
+      ],
+      "totalPrice": 500,
+      "status": "Completed"
+    }
+  ],
+  "transactions": [
+    {
+      "id": "tx-001",
+      "type": "income",
+      "amount": 500,
+      "date": "2026-06-25",
+      "description": "Payment for visit-1001"
+    },
+    {
+      "id": "tx-002",
+      "type": "expense",
+      "amount": 1500,
+      "date": "2026-06-24",
+      "description": "Clinic medical supplies restock"
+    }
+  ],
+  "expenses": [
+    {
+      "id": "exp-001",
+      "amount": 1500,
+      "date": "2026-06-24",
+      "category": "Medical Supplies",
+      "description": "Clinic medical supplies restock"
+    }
+  ]
+}

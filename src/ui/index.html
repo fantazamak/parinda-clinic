@@ -1,0 +1,1028 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Parinda Clinic Management System - ระบบจัดการคลินิกปรินดา">
+  <title>Parinda Clinic — ระบบจัดการคลินิก</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Sarabun:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+  <script src="app.js" defer></script>
+</head>
+<body>
+
+  <!-- Login Container -->
+  <div id="login-container">
+    <div class="login-bg-shape login-bg-shape-1"></div>
+    <div class="login-bg-shape login-bg-shape-2"></div>
+    <div class="login-bg-shape login-bg-shape-3"></div>
+    <div class="login-card">
+      <div class="login-logo">
+        <span class="login-logo-icon">🏥</span>
+      </div>
+      <h2>Parinda Clinic</h2>
+      <p class="login-subtitle">ระบบจัดการคลินิกปรินดา</p>
+      <div id="login-error-msg" class="error-message hidden"></div>
+      <form id="login-form">
+        <div class="form-group">
+          <label for="username">Username</label>
+          <input type="text" id="username" required placeholder="กรอกชื่อผู้ใช้" autocomplete="username">
+        </div>
+        <div class="form-group">
+          <label for="password">Password</label>
+          <input type="password" id="password" required placeholder="กรอกรหัสผ่าน" autocomplete="current-password">
+        </div>
+        <button type="submit" id="login-submit-btn" class="btn btn-login">เข้าสู่ระบบ</button>
+      </form>
+      <p class="login-footer-text">Parinda Clinic Management System v1.0</p>
+    </div>
+  </div>
+
+  <!-- Main Application Shell -->
+  <div id="app-shell" class="hidden">
+    <!-- Sidebar Navigation -->
+    <aside id="sidebar">
+      <div class="sidebar-header">
+        <h1 id="sidebar-clinic-name">Parinda Clinic</h1>
+        <p>Management System</p>
+      </div>
+      <ul class="nav-links">
+        <li>
+          <a href="#" id="nav-dashboard" class="nav-item active" data-target="dashboard-page">
+            <span class="icon">📊</span>
+            <span class="nav-text" data-i18n="nav_dashboard">Dashboard</span>
+          </a>
+        </li>
+        <li>
+          <a href="#" id="nav-patients" class="nav-item" data-target="patients-page">
+            <span class="icon">👥</span>
+            <span class="nav-text" data-i18n="nav_patients">Patients</span>
+          </a>
+        </li>
+        <li>
+          <a href="#" id="nav-visit" class="nav-item" data-target="visit-form-page">
+            <span class="icon">📋</span>
+            <span class="nav-text" data-i18n="nav_visit">Visit Form</span>
+          </a>
+        </li>
+        <li>
+          <a href="#" id="nav-inventory" class="nav-item" data-target="inventory-page">
+            <span class="icon">📦</span>
+            <span class="nav-text" data-i18n="nav_inventory">Inventory</span>
+          </a>
+        </li>
+        <li>
+          <a href="#" id="nav-pos" class="nav-item" data-target="pos-page">
+            <span class="icon">🛒</span>
+            <span class="nav-text" data-i18n="nav_pos">POS Checkout</span>
+          </a>
+        </li>
+        <li>
+          <a href="#" id="nav-settings" class="nav-item" data-target="settings-page">
+            <span class="icon">⚙️</span>
+            <span class="nav-text" data-i18n="nav_settings">Settings</span>
+          </a>
+        </li>
+      </ul>
+      <div class="sidebar-footer">
+        <button id="nav-logout" class="btn btn-danger" style="width: 100%;">
+          <span class="icon">🚪</span>
+          <span class="nav-text" data-i18n="logout">Logout</span>
+        </button>
+      </div>
+    </aside>
+
+    <!-- Main Content Area -->
+    <main id="main-content">
+      <!-- App Header -->
+      <header class="app-header">
+        <div>
+          <h2 id="header-title" data-i18n="header_dashboard">Dashboard</h2>
+        </div>
+        <div class="header-meta" style="display: flex; align-items: center; gap: 15px;">
+          <span id="header-clinic-details">Address: 123 Main St | Tel: 02-123-4567</span>
+          <span id="header-practitioner">Practitioner: Dr. Parinda</span>
+          <select id="lang-select" class="lang-select" style="padding: 4px 8px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--card-bg); color: var(--text-color); cursor: pointer; font-size: 14px; font-weight: 500;">
+            <option value="th">ไทย</option>
+            <option value="en">English</option>
+          </select>
+        </div>
+      </header>
+
+      <!-- Pages -->
+      
+      <!-- Dashboard Page -->
+      <section id="dashboard-page" class="tab-page">
+        <h3 class="page-title" data-i18n="header_dashboard">Clinic Performance & Operations</h3>
+        
+        <!-- Date Filters -->
+        <div class="action-bar" style="background: var(--card-bg); padding: 15px; border-radius: 8px; border: 1px solid var(--border-color); margin-bottom: 20px; display: flex; gap: 15px; align-items: center; flex-wrap: wrap;">
+          <div style="display: flex; gap: 10px; align-items: center;">
+            <label for="dashboard-start-date" style="font-weight: 600;" data-i18n="filter_start_date">Start Date:</label>
+            <input type="date" id="dashboard-start-date" style="padding: 6px; border: 1px solid var(--border-color); border-radius: 4px;">
+          </div>
+          <div style="display: flex; gap: 10px; align-items: center;">
+            <label for="dashboard-end-date" style="font-weight: 600;" data-i18n="filter_end_date">End Date:</label>
+            <input type="date" id="dashboard-end-date" style="padding: 6px; border: 1px solid var(--border-color); border-radius: 4px;">
+          </div>
+          <button id="dashboard-apply-filter-btn" class="btn" style="padding: 8px 16px;" data-i18n="search">Apply Filter</button>
+        </div>
+
+        <div class="dashboard-grid">
+          <div class="stat-card patients-card">
+            <div class="stat-card-header" style="display: flex; justify-content: space-between; align-items: flex-start; width: 100%;">
+              <span class="label" data-i18n="dash_total_patients">Total Registered Patients</span>
+              <div class="stat-icon-wrapper" style="font-size: 24px; padding: 6px; border-radius: 8px; background: rgba(var(--primary-rgb), 0.1); color: var(--primary-color);">👥</div>
+            </div>
+            <span class="value" id="dash-total-patients">0</span>
+          </div>
+          <div class="stat-card income-card">
+            <div class="stat-card-header" style="display: flex; justify-content: space-between; align-items: flex-start; width: 100%;">
+              <span class="label" data-i18n="dash_income">Income</span>
+              <div class="stat-icon-wrapper" style="font-size: 24px; padding: 6px; border-radius: 8px; background: rgba(34, 197, 94, 0.1); color: #22c55e;">📈</div>
+            </div>
+            <span class="value" id="dashboard-kpi-income">0</span>
+          </div>
+          <div class="stat-card expense-card">
+            <div class="stat-card-header" style="display: flex; justify-content: space-between; align-items: flex-start; width: 100%;">
+              <span class="label" data-i18n="dash_expense">Expense</span>
+              <div class="stat-icon-wrapper" style="font-size: 24px; padding: 6px; border-radius: 8px; background: rgba(239, 68, 68, 0.1); color: #ef4444;">📉</div>
+            </div>
+            <span class="value" id="dashboard-kpi-expense">0</span>
+          </div>
+          <div class="stat-card profit-card">
+            <div class="stat-card-header" style="display: flex; justify-content: space-between; align-items: flex-start; width: 100%;">
+              <span class="label" data-i18n="dash_profit">Profit</span>
+              <div class="stat-icon-wrapper" style="font-size: 24px; padding: 6px; border-radius: 8px; background: rgba(59, 130, 246, 0.1); color: #3b82f6;">💰</div>
+            </div>
+            <span class="value" id="dashboard-kpi-profit">0</span>
+          </div>
+          <div class="stat-card visits-card">
+            <div class="stat-card-header" style="display: flex; justify-content: space-between; align-items: flex-start; width: 100%;">
+              <span class="label" data-i18n="dash_today_visits">Today's Visits</span>
+              <div class="stat-icon-wrapper" style="font-size: 24px; padding: 6px; border-radius: 8px; background: rgba(168, 85, 247, 0.1); color: #a855f7;">📅</div>
+            </div>
+            <span class="value" id="dash-today-visits">0</span>
+          </div>
+          <div class="stat-card stock-card">
+            <div class="stat-card-header" style="display: flex; justify-content: space-between; align-items: flex-start; width: 100%;">
+              <span class="label" data-i18n="dash_low_stock">Low Stock Items</span>
+              <div class="stat-icon-wrapper" style="font-size: 24px; padding: 6px; border-radius: 8px; background: rgba(245, 158, 11, 0.1); color: #f59e0b;">⚠️</div>
+            </div>
+            <span class="value" id="dash-low-stock">0</span>
+            <div id="dash-stock-progress-container" class="progress-bar-container hidden" style="margin-top: 10px; width: 100%;">
+              <div class="progress-bar-track" style="height: 6px; background: var(--border-color); border-radius: 3px; overflow: hidden; position: relative;">
+                <div id="dash-stock-progress-bar" class="progress-bar-fill" style="height: 100%; width: 0%; background: #f59e0b; transition: width 0.3s ease;"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="settings-grid" style="margin-top: 20px;">
+          <!-- Log Transaction Form -->
+          <div class="settings-card">
+            <h4 data-i18n="dash_log_tx_title">บันทึกรายรับ-รายจ่าย</h4>
+            <form id="expense-form" style="margin-top: 15px;">
+              <div class="form-group">
+                <label for="tx-type-select" data-i18n="dash_tx_type">ประเภท</label>
+                <select id="tx-type-select" required>
+                  <option value="expense" data-i18n="tx_type_expense">รายจ่าย</option>
+                  <option value="income" data-i18n="tx_type_income">รายรับ</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label for="expense-amount" data-i18n="dash_expense_amount">Amount (฿)</label>
+                <input type="number" id="expense-amount" placeholder="e.g. 500" required min="1">
+              </div>
+              <div class="form-group">
+                <label for="tx-category-select" data-i18n="dash_tx_category">หมวดหมู่</label>
+                <select id="tx-category-select" required>
+                  <optgroup label="รายรับ">
+                    <option value="Service Fee" data-i18n="cat_service_fee">ค่าบริการตรวจรักษา</option>
+                    <option value="Medicine/Sales" data-i18n="cat_medicine_sales">ค่ายาและสินค้า</option>
+                    <option value="Other Income" data-i18n="cat_other_income">รายรับอื่นๆ</option>
+                  </optgroup>
+                  <optgroup label="รายจ่าย">
+                    <option value="Medical Supplies" data-i18n="exp_med_supplies">เวชภัณฑ์และยา</option>
+                    <option value="Utilities" data-i18n="exp_utilities">ค่าสาธารณูปโภค</option>
+                    <option value="Rent" data-i18n="exp_rent">ค่าเช่าสถานที่</option>
+                    <option value="Other" data-i18n="exp_other">อื่น ๆ</option>
+                  </optgroup>
+                </select>
+              </div>
+              <div class="form-group">
+                <label for="expense-desc" data-i18n="dash_expense_desc">รายละเอียด</label>
+                <input type="text" id="expense-desc" placeholder="เช่น ค่าตรวจรักษาประจำเดือน หรือ ซื้อยาสำรอง..." required>
+              </div>
+              <button type="submit" id="expense-submit-btn" class="btn" style="width: 100%;" data-i18n="dash_add_tx_btn">บันทึก</button>
+            </form>
+          </div>
+
+          <!-- Transaction/Expense List -->
+          <div class="settings-card">
+            <h4 data-i18n="dash_recent_transactions">Recent Transactions / Expenses</h4>
+            <div id="dashboard-expense-list" style="max-height: 320px; overflow-y: auto; overflow-x: visible; margin-top: 15px; font-size: 14px; line-height: 1.6; border: 1px solid var(--border-color); border-radius: 4px; padding: 0; background: var(--bg-color);">
+              <!-- Dynamically populated -->
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Patients Page -->
+      <section id="patients-page" class="tab-page hidden">
+        <div class="action-bar">
+          <h3 class="page-title" data-i18n="header_patients">Patient Directory</h3>
+          <div>
+            <input type="text" id="patient-search-input" class="search-input" placeholder="Search by name, HN, or phone..." data-i18n="patients_search_placeholder">
+            <button id="patient-search-btn" class="btn" style="padding: 8px 16px;" data-i18n="search">Search</button>
+          </div>
+          <button id="register-patient-btn" class="btn" data-i18n="patients_add_btn">+ Add New Patient</button>
+        </div>
+
+        <div class="recent-visits-card">
+          <div class="data-table-container">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th data-i18n="table_hn">HN</th>
+                  <th data-i18n="table_name">Full Name</th>
+                  <th data-i18n="table_gender">Gender</th>
+                  <th data-i18n="table_phone">Phone</th>
+                  <th data-i18n="table_allergies">Allergies</th>
+                  <th data-i18n="table_action">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="patient-table-body">
+                <!-- Dynamically populated -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Patient Form Modal -->
+        <div id="patient-form-modal" class="hidden" style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.5); display: flex; justify-content: center; align-items: center; z-index: 1000;">
+          <div class="login-card" style="width: 750px; max-height: 90vh; overflow-y: auto; padding: 25px;">
+            <h3 id="patient-modal-title" style="margin-bottom: 20px; text-align: center; font-weight: 700;" data-i18n="register_patient">Register Patient</h3>
+            <form id="patient-form">
+              
+              <!-- Section 1: Demographics / ข้อมูลทั่วไป -->
+              <h4 style="margin-bottom: 15px; border-bottom: 1px solid var(--border-color); padding-bottom: 5px; color: var(--primary-color);" data-i18n="patient_sec_profile">Patient Profile</h4>
+              
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                <div class="form-group">
+                  <label for="patient-hn-input" data-i18n="patient_hn">HN (Auto-generated)</label>
+                  <input type="text" id="patient-hn-input" readonly placeholder="Auto-generated">
+                </div>
+                <div class="form-group">
+                  <label for="patient-citizen-id-input" data-i18n="patient_citizen_id">Citizen ID (13 digits - Optional)</label>
+                  <input type="text" id="patient-citizen-id-input" placeholder="e.g. 1234567890123" maxlength="13">
+                </div>
+              </div>
+
+              <div style="display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 15px;">
+                <div class="form-group">
+                  <label for="patient-name-input" data-i18n="patient_name">Full Name</label>
+                  <input type="text" id="patient-name-input" required placeholder="e.g. Somprasong Rakdee">
+                </div>
+                <div class="form-group">
+                  <label for="patient-gender-select" data-i18n="patient_gender">Gender</label>
+                  <select id="patient-gender-select" required>
+                    <option value="Male" data-i18n="gender_male">Male</option>
+                    <option value="Female" data-i18n="gender_female">Female</option>
+                    <option value="Other" data-i18n="gender_other">Other</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label for="patient-dob-input" data-i18n="patient_dob">Date of Birth</label>
+                  <input type="date" id="patient-dob-input" required>
+                </div>
+              </div>
+
+              <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px;">
+                <div class="form-group">
+                  <label for="patient-nationality-input" data-i18n="patient_nationality">Nationality (Optional)</label>
+                  <input type="text" id="patient-nationality-input" value="ไทย">
+                </div>
+                <div class="form-group">
+                  <label for="patient-race-input" data-i18n="patient_race">Race (Optional)</label>
+                  <input type="text" id="patient-race-input" value="ไทย">
+                </div>
+                <div class="form-group">
+                  <label for="patient-marital-status-select" data-i18n="patient_marital_status">Marital Status (Optional)</label>
+                  <select id="patient-marital-status-select">
+                    <option value="Single" data-i18n="marital_single">Single</option>
+                    <option value="Married" data-i18n="marital_married">Married</option>
+                    <option value="Widowed" data-i18n="marital_widowed">Widowed</option>
+                    <option value="Divorced" data-i18n="marital_divorced">Divorced</option>
+                    <option value="Other" data-i18n="marital_other">Other</option>
+                  </select>
+                </div>
+              </div>
+
+              <div id="patient-marital-status-other-group" class="form-group hidden">
+                <label for="patient-marital-status-other-input" data-i18n="patient_marital_status_other">Specify Marital Status</label>
+                <input type="text" id="patient-marital-status-other-input" placeholder="Specify status...">
+              </div>
+
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                <div class="form-group">
+                  <label for="patient-phone-input" data-i18n="patient_phone">Phone Number</label>
+                  <input type="text" id="patient-phone-input" required placeholder="e.g. 0855555555">
+                </div>
+                <div class="form-group">
+                  <label for="patient-medical-right-select" data-i18n="patient_medical_right">Medical Benefit Right (Optional)</label>
+                  <select id="patient-medical-right-select">
+                    <option value="Universal Healthcare / 30 Baht" data-i18n="right_universal">Universal Healthcare (30 Baht)</option>
+                    <option value="Social Security" data-i18n="right_social">Social Security</option>
+                    <option value="Civil Servant" data-i18n="right_civil">Civil Servant</option>
+                    <option value="Self-pay" data-i18n="right_self">Self-pay</option>
+                  </select>
+                </div>
+              </div>
+
+              <!-- Address Section -->
+              <h4 style="margin-top: 20px; margin-bottom: 15px; border-bottom: 1px solid var(--border-color); padding-bottom: 5px; color: var(--primary-color);" data-i18n="patient_sec_address">Addresses</h4>
+              <div class="form-group">
+                <label for="patient-card-address-input" data-i18n="patient_card_address">Address on ID Card (Optional)</label>
+                <input type="text" id="patient-card-address-input" placeholder="Full address matching ID card">
+              </div>
+              <div class="form-group">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
+                  <label for="patient-contact-address-input" style="margin-bottom: 0;" data-i18n="patient_contact_address">Contactable Address (Optional)</label>
+                  <div style="display: flex; align-items: center; gap: 5px; font-size: 13px;">
+                    <input type="checkbox" id="copy-address-chk" style="cursor: pointer;">
+                    <span style="cursor: pointer;" id="copy-address-label" data-i18n="patient_same_address">Same as ID Card Address</span>
+                  </div>
+                </div>
+                <input type="text" id="patient-contact-address-input" placeholder="Address where patient can be contacted">
+              </div>
+
+              <!-- Emergency Section -->
+              <h4 style="margin-top: 20px; margin-bottom: 15px; border-bottom: 1px solid var(--border-color); padding-bottom: 5px; color: var(--primary-color);" data-i18n="patient_sec_emergency">Emergency Contact</h4>
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                <div class="form-group">
+                  <label for="patient-emergency-name-input" data-i18n="patient_emergency_name">Emergency Contact Name (Optional)</label>
+                  <input type="text" id="patient-emergency-name-input" placeholder="Full name of emergency contact">
+                </div>
+                <div class="form-group">
+                  <label for="patient-emergency-phone-input" data-i18n="patient_emergency_phone">Emergency Phone Number (Optional)</label>
+                  <input type="text" id="patient-emergency-phone-input" placeholder="e.g. 0899999999">
+                </div>
+              </div>
+
+              <!-- Medical Conditions Section -->
+              <h4 style="margin-top: 20px; margin-bottom: 15px; border-bottom: 1px solid var(--border-color); padding-bottom: 5px; color: var(--primary-color);" data-i18n="patient_sec_medical">Medical History</h4>
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                <div class="form-group">
+                  <label for="patient-underlying-disease-input" data-i18n="patient_underlying_disease">Underlying Disease (Optional)</label>
+                  <input type="text" id="patient-underlying-disease-input" placeholder="e.g. Hypertension, Diabetes (or None)">
+                </div>
+                <div class="form-group">
+                  <label for="patient-allergies-input" data-i18n="patient_allergies">Allergies (Optional)</label>
+                  <input type="text" id="patient-allergies-input" placeholder="e.g. Penicillin (or None)">
+                </div>
+              </div>
+
+              <!-- Metadata Section -->
+              <h4 style="margin-top: 20px; margin-bottom: 15px; border-bottom: 1px solid var(--border-color); padding-bottom: 5px; color: var(--primary-color);" data-i18n="patient_sec_record">Record Logging</h4>
+              <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px;">
+                <div class="form-group">
+                  <label for="patient-recorded-date-input" data-i18n="patient_recorded_date">Recorded Date</label>
+                  <input type="date" id="patient-recorded-date-input" required>
+                </div>
+                <div class="form-group">
+                  <label for="patient-informant-name-input" data-i18n="patient_informant_name">Informant Name (Optional)</label>
+                  <input type="text" id="patient-informant-name-input" placeholder="e.g. Patient, Mother, Spouse">
+                </div>
+                <div class="form-group">
+                  <label for="patient-recorder-name-input" data-i18n="patient_recorder_name">Recorder Name</label>
+                  <input type="text" id="patient-recorder-name-input" required>
+                </div>
+              </div>
+
+              <!-- Actions -->
+              <div style="display: flex; gap: 15px; margin-top: 25px; border-top: 1px solid var(--border-color); padding-top: 15px;">
+                <button type="submit" id="patient-save-btn" class="btn" style="flex: 1;" data-i18n="save">Save</button>
+                <button type="button" id="patient-cancel-btn" class="btn btn-secondary" style="flex: 1;" data-i18n="cancel">Cancel</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </section>
+
+      <!-- Visit Form Page -->
+      <section id="visit-form-page" class="tab-page hidden">
+        <h3 class="page-title" data-i18n="visit_record_title">Record Patient Visit</h3>
+        
+        <div style="margin-bottom: 20px; background: var(--card-bg); padding: 15px; border-radius: 8px; border: 1px solid var(--border-color); display: flex; gap: 20px; align-items: center; flex-wrap: wrap;">
+          <div style="display: flex; align-items: center; gap: 10px;">
+            <label for="visit-patient-selector" style="font-weight: bold; font-size: 14px;" data-i18n="visit_select_patient">Select Patient:</label>
+            <select id="visit-patient-selector" style="padding: 6px 12px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--card-bg); color: var(--text-color); cursor: pointer; min-width: 250px; outline: none; font-family: inherit;">
+              <option value="" data-i18n="visit_select_placeholder">-- Choose Patient --</option>
+            </select>
+          </div>
+          <div style="display: flex; gap: 20px; align-items: center; border-left: 1px solid var(--border-color); padding-left: 20px;">
+            <strong data-i18n="visit_active_patient">Active Patient:</strong>
+            <span>HN: <span id="visit-patient-hn" style="font-weight: bold; color: var(--primary-color);">None</span></span>
+            <span data-i18n="visit_patient_name_label">Name:</span> <span id="visit-patient-name" style="font-weight: bold;">None</span>
+          </div>
+        </div>
+
+        <!-- Stepper Progress Bar Header -->
+        <div class="visit-stepper-header">
+          <div class="step-indicator active" id="step-indicator-1" data-step="1">
+            <div class="step-number">1</div>
+            <div class="step-title" data-i18n="visit_step_vitals">สัญญาณชีพ & อาการสำคัญ</div>
+          </div>
+          <div class="step-line" id="step-line-1"></div>
+          <div class="step-indicator" id="step-indicator-2" data-step="2">
+            <div class="step-number">2</div>
+            <div class="step-title" data-i18n="visit_step_clinical">วินิจฉัย & บันทึกตรวจ</div>
+          </div>
+          <div class="step-line" id="step-line-2"></div>
+          <div class="step-indicator" id="step-indicator-3" data-step="3">
+            <div class="step-number">3</div>
+            <div class="step-title" data-i18n="visit_step_presc">สั่งยา & ชำระเงิน</div>
+          </div>
+        </div>
+
+        <div class="visit-stepper-content">
+          <!-- Step 1: Vitals & CC -->
+          <div class="visit-step-pane" id="visit-step-pane-1">
+            <div class="visit-grid-layout-step">
+              <div class="visit-panel">
+                <h4 data-i18n="visit_sec_vitals" style="font-size: 16px; font-weight: 700; margin-bottom: 18px; padding-bottom: 12px; border-bottom: 1px solid var(--border-color); color: var(--primary-color);">1. สัญญาณชีพ</h4>
+                <div class="form-group" style="margin-top: 15px;">
+                  <label for="vitals-bp" data-i18n="vitals_bp">Blood Pressure (mmHg)</label>
+                  <input type="text" id="vitals-bp" placeholder="เช่น 120/80">
+                </div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                  <div class="form-group">
+                    <label for="vitals-hr" data-i18n="vitals_pulse">Pulse / Heart Rate (bpm)</label>
+                    <input type="number" id="vitals-hr" placeholder="e.g. 72">
+                  </div>
+                  <div class="form-group">
+                    <label for="vitals-rr" data-i18n="vitals_rr">Respiratory Rate (/min)</label>
+                    <input type="number" id="vitals-rr" placeholder="e.g. 20">
+                  </div>
+                </div>
+                <div class="form-group">
+                  <label for="vitals-temp" data-i18n="vitals_temp">Temperature (°C)</label>
+                  <input type="number" id="vitals-temp" step="0.1" placeholder="e.g. 36.5">
+                </div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                  <div class="form-group">
+                    <label for="vitals-weight" data-i18n="vitals_weight">Weight (kg)</label>
+                    <input type="number" id="vitals-weight" placeholder="e.g. 70" step="0.1">
+                  </div>
+                  <div class="form-group">
+                    <label for="vitals-height" data-i18n="vitals_height">Height (cm)</label>
+                    <input type="number" id="vitals-height" placeholder="e.g. 175">
+                  </div>
+                </div>
+                <div class="form-group">
+                  <label for="vitals-bmi" data-i18n="vitals_bmi">Calculated BMI</label>
+                  <input type="text" id="vitals-bmi" readonly placeholder="คำนวณอัตโนมัติ">
+                </div>
+              </div>
+
+              <div class="visit-panel">
+                <h4 style="font-size: 16px; font-weight: 700; margin-bottom: 18px; padding-bottom: 12px; border-bottom: 1px solid var(--border-color); color: var(--primary-color);" data-i18n="visit_symptoms">Chief Complaint / Symptoms</h4>
+                <div class="form-group" style="margin-top: 15px;">
+                  <label for="visit-symptoms" data-i18n="visit_symptoms">Chief Complaint / Symptoms</label>
+                  <textarea id="visit-symptoms" rows="6" style="min-height: 150px;" placeholder="เช่น ไอ มีไข้ 3 วัน..."></textarea>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Step 2: Diagnostic & Exams -->
+          <div class="visit-step-pane hidden" id="visit-step-pane-2">
+            <div class="visit-panel">
+              <h4 style="font-size: 16px; font-weight: 700; margin-bottom: 18px; padding-bottom: 12px; border-bottom: 1px solid var(--border-color); color: var(--primary-color);" data-i18n="visit_sec_clinical">2. อาการและการวินิจฉัยโรค</h4>
+              
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 15px;">
+                <div class="form-group">
+                  <label for="visit-present-illness" data-i18n="visit_present_illness">Present Illness</label>
+                  <textarea id="visit-present-illness" rows="3" placeholder="เช่น อาการเริ่มต้น 2 วันก่อน..."></textarea>
+                </div>
+                <div class="form-group">
+                  <label for="visit-past-history" data-i18n="visit_past_history">Past History</label>
+                  <textarea id="visit-past-history" rows="3" placeholder="เช่น ปฏิเสธโรคประจำตัว..."></textarea>
+                </div>
+              </div>
+
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                <div class="form-group">
+                  <label for="visit-regular-medication" data-i18n="visit_regular_medication">Current/Regular Medications</label>
+                  <textarea id="visit-regular-medication" rows="3" placeholder="เช่น ไม่ได้ใช้ยาประจำ..."></textarea>
+                </div>
+                <div class="form-group">
+                  <label for="visit-pe" data-i18n="visit_pe_notes">Physical Examination</label>
+                  <textarea id="visit-pe" rows="3" placeholder="เช่น เสียงปอดชัดเจน ไม่พบสิ่งผิดปกติ..."></textarea>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label for="visit-diagnosis" data-i18n="visit_diagnosis">Diagnosis</label>
+                <textarea id="visit-diagnosis" rows="3" placeholder="เช่น URI, ไข้หวัดใหญ่..."></textarea>
+              </div>
+            </div>
+          </div>
+
+          <!-- Step 3: Prescriptions & Checkout -->
+          <div class="visit-step-pane hidden" id="visit-step-pane-3">
+            <div class="visit-panel">
+              <h4 style="font-size: 16px; font-weight: 700; margin-bottom: 18px; padding-bottom: 12px; border-bottom: 1px solid var(--border-color); color: var(--primary-color);" data-i18n="visit_sec_treatment">3. สั่งยา หัตถการ และการชำระเงิน</h4>
+              
+              <div class="form-group" style="margin-top: 15px;">
+                <label for="visit-treatment" data-i18n="visit_treatment_label">Treatment, Procedures & Advice (การรักษา/หัตถการ/คำแนะนำ)</label>
+                <textarea id="visit-treatment" rows="3" placeholder="เช่น GG 1 เม็ด หลังอาหาร 3 มื้อ, แนะนำเช็ดตัวลดไข้..."></textarea>
+              </div>
+              
+              <div class="form-group">
+                <label data-i18n="visit_prescribe_label">Prescribe Medications / Procedures</label>
+                <div style="display: flex; gap: 10px;">
+                  <select id="presc-product-select" style="flex-grow: 1;">
+                    <!-- Dynamically populated from products -->
+                  </select>
+                  <input type="number" id="presc-qty-input" value="1" min="1" style="width: 80px;">
+                  <button type="button" id="add-presc-item-btn" class="btn" style="padding: 10px 15px;" data-i18n="add">Add</button>
+                </div>
+              </div>
+
+              <div class="data-table-container" style="margin-top: 15px; max-height: 200px; overflow-y: auto;">
+                <table class="data-table" style="font-size: 14px; width: 100%;">
+                  <thead>
+                    <tr>
+                      <th data-i18n="table_item">Product/Service</th>
+                      <th data-i18n="table_qty">Qty</th>
+                      <th data-i18n="table_price">Price</th>
+                      <th data-i18n="table_total">Total</th>
+                      <th data-i18n="table_action">Action</th>
+                    </tr>
+                  </thead>
+                  <tbody id="presc-table-body">
+                    <!-- Prescribed items -->
+                  </tbody>
+                </table>
+              </div>
+
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 20px; font-weight: bold; font-size: 18px; border-top: 2px solid var(--border-color); padding-top: 15px;">
+                <span data-i18n="visit_total_bill">Total Bill:</span>
+                <span style="color: var(--primary-color);">฿<span id="visit-total-price">0.00</span></span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Navigation Buttons at the bottom -->
+        <div class="visit-stepper-actions" style="margin-top: 20px; display: flex; justify-content: space-between; gap: 15px; background: var(--card-bg); padding: 15px; border-radius: 12px; border: 1px solid var(--border-color); box-shadow: var(--shadow-sm);">
+          <button type="button" id="visit-btn-prev" class="btn btn-secondary hidden" style="min-width: 100px;">
+            <span class="icon">⬅️</span> <span data-i18n="back">ย้อนกลับ</span>
+          </button>
+          <div style="flex-grow: 1;"></div>
+          
+          <button type="button" id="visit-btn-next" class="btn" style="min-width: 100px;">
+            <span data-i18n="next">ขั้นตอนถัดไป</span> <span class="icon">➡️</span>
+          </button>
+          
+          <!-- Save & Print Buttons, only active/visible on Step 3 -->
+          <div id="visit-save-actions-group" class="hidden" style="display: flex; gap: 10px;">
+            <button type="button" id="visit-save-btn" class="btn" style="min-width: 120px;" data-i18n="visit_save">Save Visit</button>
+            <button type="button" id="visit-preview-pdf-btn" class="btn btn-secondary" style="min-width: 100px; background: linear-gradient(135deg, #475569, #64748b);" data-i18n="visit_preview_pdf">Preview PDF</button>
+            <button type="button" id="visit-print-pdf-btn" class="btn btn-secondary" style="min-width: 100px;" data-i18n="visit_print_pdf">Print PDF</button>
+          </div>
+          
+          <button type="button" id="visit-cancel-btn" class="btn btn-danger" style="min-width: 80px;" data-i18n="cancel">Cancel</button>
+        </div>
+      </section>
+
+      <!-- Inventory Page -->
+      <section id="inventory-page" class="tab-page hidden">
+        <div class="action-bar">
+          <h3 class="page-title" data-i18n="header_inventory">Medicine & Supply Inventory</h3>
+          <div>
+            <input type="text" id="inventory-search-input" class="search-input" placeholder="Search by name or code..." data-i18n="inventory_search_placeholder">
+          </div>
+          <button id="add-product-btn" class="btn" data-i18n="inventory_add_btn">+ Add Product</button>
+        </div>
+
+        <div class="recent-visits-card">
+          <div class="data-table-container">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th data-i18n="table_id">Product ID</th>
+                  <th data-i18n="table_name">Product Name</th>
+                  <th data-i18n="table_price">Price</th>
+                  <th data-i18n="table_stock">Stock Quantity</th>
+                  <th data-i18n="table_unit">Unit</th>
+                  <th data-i18n="table_min">Min Alert</th>
+                  <th data-i18n="table_action">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="inventory-table-body">
+                <!-- Dynamically populated -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Product Form Modal -->
+        <div id="product-form-modal" class="hidden" style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.5); display: flex; justify-content: center; align-items: center; z-index: 1000;">
+          <div class="login-card" style="width: 500px; max-height: 90vh; overflow-y: auto;">
+            <h3 id="product-modal-title" style="margin-bottom: 15px; text-align: center;" data-i18n="product_title">Product Details</h3>
+            <form id="product-form">
+              <div class="form-group">
+                <label for="product-id-input" data-i18n="product_id">Product ID (Auto-generated/Read-only)</label>
+                <input type="text" id="product-id-input" readonly placeholder="Auto-generated">
+              </div>
+              <div class="form-group">
+                <label for="product-name-input" data-i18n="product_name_label">Product Name</label>
+                <input type="text" id="product-name-input" required placeholder="e.g. Paracetamol 500mg">
+              </div>
+              <div class="form-group">
+                <label for="product-price-input" data-i18n="product_price">Unit Price (฿)</label>
+                <input type="number" id="product-price-input" required placeholder="e.g. 50" min="0" step="0.01">
+              </div>
+              <div class="form-group">
+                <label for="product-stock-input" data-i18n="product_stock">Stock Quantity</label>
+                <input type="number" id="product-stock-input" required placeholder="e.g. 100" min="0">
+              </div>
+              <div class="form-group">
+                <label for="product-unit-input" data-i18n="product_unit">Unit Type</label>
+                <input type="text" id="product-unit-input" required placeholder="e.g. tablet, bottle">
+              </div>
+              <div class="form-group">
+                <label for="product-min-stock-alert-input" data-i18n="product_min_stock">Min Stock Alert Level</label>
+                <input type="number" id="product-min-stock-alert-input" required placeholder="e.g. 10" min="0">
+              </div>
+              <div class="form-group">
+                <label for="product-image-input" data-i18n="product_image">Product Image (รูปสินค้า - ไม่บังคับ)</label>
+                <input type="file" id="product-image-input" accept="image/*" style="padding: 8px; border: 1.5px dashed var(--border-color); border-radius: 10px; background: var(--bg-color); cursor: pointer;">
+                <div id="product-image-preview-container" style="margin-top: 10px; text-align: center;">
+                  <img id="product-image-preview" src="" class="hidden" style="max-width: 100%; max-height: 120px; border-radius: 8px; border: 1px solid var(--border-color); object-fit: cover;">
+                </div>
+              </div>
+              <div style="display: flex; gap: 10px; margin-top: 20px;">
+                <button type="submit" id="product-save-btn" class="btn" style="flex: 1;" data-i18n="save">Save</button>
+                <button type="button" id="product-cancel-btn" class="btn btn-secondary" style="flex: 1;" data-i18n="cancel">Cancel</button>
+              </div>
+            </form>
+          </div>
+        </div>
+
+        <!-- Restock Quantity Modal -->
+        <div id="restock-form-modal" class="hidden" style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.5); display: flex; justify-content: center; align-items: center; z-index: 1001;">
+          <div class="login-card" style="width: 400px;">
+            <h3 style="margin-bottom: 15px; text-align: center;" data-i18n="restock_title">Restock Product</h3>
+            <form id="restock-form">
+              <input type="hidden" id="restock-product-id">
+              <div class="form-group">
+                <label for="restock-qty-input" data-i18n="restock_qty">Additional Stock Quantity</label>
+                <input type="number" id="restock-qty-input" required min="1" placeholder="e.g. 50">
+              </div>
+              <div style="display: flex; gap: 10px; margin-top: 20px;">
+                <button type="submit" id="restock-confirm-btn" class="btn" style="flex: 1;" data-i18n="confirm">Confirm</button>
+                <button type="button" id="restock-cancel-btn" class="btn btn-secondary" style="flex: 1;" data-i18n="cancel">Cancel</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </section>
+
+      <!-- POS Page -->
+      <section id="pos-page" class="tab-page hidden">
+        <h3 class="page-title" data-i18n="header_pos">Point of Sale (POS) Checkout</h3>
+        <div class="pos-layout">
+          <div>
+            <h4 data-i18n="pos_add_title">Add Product to Cart</h4>
+            <div style="margin-top: 15px; background: var(--card-bg); padding: 20px; border-radius: 8px; border: 1px solid var(--border-color);">
+              <div class="form-group">
+                <label for="pos-product-select" data-i18n="pos_product_label">Product</label>
+                <select id="pos-product-select" style="width: 100%;">
+                  <!-- Dynamically populated -->
+                </select>
+              </div>
+              <div class="form-group">
+                <label for="pos-qty-input" data-i18n="pos_qty_label">Quantity</label>
+                <input type="number" id="pos-qty-input" value="1" min="1">
+              </div>
+              <button id="pos-add-to-cart-btn" class="btn" style="width: 100%;" data-i18n="pos_add_btn">Add to Cart</button>
+            </div>
+            
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 30px; margin-bottom: 15px; gap: 10px; flex-wrap: wrap;">
+              <h4 data-i18n="pos_catalog_title" style="margin: 0;">Product Catalog Quick Add</h4>
+              <input type="text" id="pos-catalog-search" class="search-input" style="width: 220px; padding: 6px 12px; font-size: 13px; margin: 0;" placeholder="ค้นหาสินค้าด่วน..." data-i18n="pos_catalog_search_placeholder">
+            </div>
+            <div class="pos-catalog" id="pos-catalog-list">
+              <!-- Dynamically populated from products -->
+            </div>
+          </div>
+ 
+          <div class="pos-cart-container" style="display: flex; flex-direction: column;">
+            <div class="pos-cart">
+              <div class="receipt-header" style="text-align: center; margin-bottom: 15px; border-bottom: 1px dashed var(--border-color); padding-bottom: 10px;">
+                <h4 style="margin: 0; font-size: 16px; font-weight: 700; letter-spacing: 0.5px;" data-i18n="pos_cart_title">Current Invoice Cart</h4>
+                <small style="color: var(--text-secondary);" id="receipt-date-time">PARINDA CLINIC RECEIPT</small>
+              </div>
+              
+              <div class="pos-cart-items">
+                <table class="data-table" style="font-size: 13px; width: 100%;">
+                  <thead>
+                    <tr>
+                      <th data-i18n="table_item" style="padding: 8px 4px;">Item</th>
+                      <th data-i18n="table_qty" style="padding: 8px 4px; text-align: center;">Qty</th>
+                      <th data-i18n="table_price" style="padding: 8px 4px; text-align: right;">Price</th>
+                      <th data-i18n="table_total" style="padding: 8px 4px; text-align: right;">Total</th>
+                      <th data-i18n="table_action" style="padding: 8px 4px; text-align: center;">Action</th>
+                    </tr>
+                  </thead>
+                  <tbody id="pos-cart-table-body">
+                    <!-- Dynamically populated -->
+                  </tbody>
+                </table>
+              </div>
+ 
+              <div style="margin-top: 15px; border-top: 1px dashed var(--border-color); padding-top: 15px;">
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px;">
+                  <div class="form-group" style="margin-bottom: 0;">
+                    <label for="pos-discount-input" style="font-size: 11px; margin-bottom: 4px;" data-i18n="pos_discount">Discount (฿)</label>
+                    <input type="number" id="pos-discount-input" style="padding: 6px 10px; font-size: 13px;" placeholder="0" min="0">
+                  </div>
+                  <div class="form-group" style="margin-bottom: 0;">
+                    <label for="pos-cash-input" style="font-size: 11px; margin-bottom: 4px;" data-i18n="pos_cash">Cash Paid (฿)</label>
+                    <input type="number" id="pos-cash-input" style="padding: 6px 10px; font-size: 13px;" placeholder="0" min="0">
+                  </div>
+                </div>
+                
+                <div class="pos-summary" style="font-size: 15px; padding: 6px 0; border-top: 1px dashed var(--border-color); margin-bottom: 4px;">
+                  <span data-i18n="pos_total" style="font-weight: 600;">Total Invoice:</span>
+                  <span style="font-weight: 700; color: var(--primary-color);">฿<span id="pos-total-price">0.00</span></span>
+                </div>
+                <div class="pos-summary" style="font-size: 15px; padding: 6px 0; margin-bottom: 15px; color: var(--success-color); border-bottom: 1px dashed var(--border-color); margin-top: 0; border-top: none;">
+                  <span data-i18n="pos_change" style="font-weight: 600;">Change:</span>
+                  <span style="font-weight: 700;">฿<span id="pos-change-span">0.00</span></span>
+                </div>
+                
+                <div style="display: flex; gap: 10px;">
+                  <button id="pos-checkout-btn" class="btn" style="flex: 2; padding: 10px;" data-i18n="pos_checkout">Checkout</button>
+                  <button id="pos-clear-cart-btn" class="btn btn-secondary" style="flex: 1; padding: 10px;" data-i18n="pos_clear">Clear</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Settings Page -->
+      <section id="settings-page" class="tab-page hidden">
+        <h3 class="page-title" data-i18n="header_settings">System Settings</h3>
+        
+        <div class="settings-grid">
+          <!-- Credentials Form -->
+          <div class="settings-card">
+            <h3 data-i18n="settings_auth_title">Authentication Credentials</h3>
+            <div id="settings-auth-success-msg" class="success-message hidden" data-i18n="settings_success">Settings saved successfully!</div>
+            <form id="settings-credentials-form" onsubmit="return false;">
+              <div class="form-group">
+                <label for="settings-username-input" data-i18n="settings_username">ชื่อผู้ใช้</label>
+                <input type="text" id="settings-username-input">
+              </div>
+              <div class="form-group">
+                <label for="settings-password-input" data-i18n="settings_password">รหัสผ่าน</label>
+                <input type="password" id="settings-password-input">
+              </div>
+              <button type="button" id="settings-save-auth-btn" class="btn" style="width: 100%; margin-top: 15px;" data-i18n="settings_save_auth_btn">บันทึกบัญชี</button>
+            </form>
+          </div>
+
+          <!-- Theme Customization -->
+          <div class="settings-card">
+            <h3 data-i18n="settings_theme_title">ธีมหน้าจอ</h3>
+            <form id="settings-theme-form" onsubmit="return false;">
+              <div class="form-group">
+                <label for="settings-theme-select" data-i18n="settings_theme">เลือกธีม</label>
+                <select id="settings-theme-select">
+                  <option value="clinic-green" data-i18n="theme_green">เขียวคลินิก</option>
+                  <option value="soft-blue" data-i18n="theme_blue">ฟ้าพาสเทล</option>
+                  <option value="dark" data-i18n="theme_dark">โหมดมืด</option>
+                  <option value="warm-pink" data-i18n="theme_pink">ชมพูอบอุ่น</option>
+                  <option value="charcoal-silver" data-i18n="theme_charcoal">ชาร์โคลแอนด์ซิลเวอร์</option>
+                </select>
+              </div>
+              <button type="button" id="settings-save-theme-btn" class="btn" style="width: 100%; margin-top: 15px;" data-i18n="settings_save_theme_btn">บันทึกธีม</button>
+            </form>
+          </div>
+
+          <!-- Auto Update Settings -->
+          <div class="settings-card">
+            <h3 data-i18n="settings_update_title">อัปเดตระบบ (System Update)</h3>
+            <div style="font-size: 14px; margin-bottom: 15px; color: var(--text-secondary);">
+              เวอร์ชันปัจจุบัน (Current Version): <span id="settings-current-version">1.0.0</span>
+            </div>
+            <button type="button" id="settings-check-update-btn" class="btn" style="width: 100%; margin-top: 15px;">ตรวจสอบการอัปเดต</button>
+          </div>
+
+          <!-- Clinic Info Form -->
+          <div class="settings-card" style="grid-column: span 2;">
+            <h3 data-i18n="settings_clinic_title">ข้อมูลคลินิก</h3>
+            <div id="settings-clinic-success-msg" class="success-message hidden" data-i18n="settings_success">บันทึกสำเร็จ!</div>
+            <form id="settings-clinic-form" onsubmit="return false;">
+              <div class="form-group">
+                <label for="settings-clinic-name-input" data-i18n="settings_clinic_name">ชื่อคลินิก</label>
+                <input type="text" id="settings-clinic-name-input">
+              </div>
+              <div class="form-group">
+                <label for="settings-clinic-header-input" data-i18n="settings_clinic_header">หัวกระดาษเอกสาร</label>
+                <textarea id="settings-clinic-header-input" rows="3" placeholder="ข้อความที่จะแสดงบนใบเสร็จ/เอกสาร PDF" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();}"></textarea>
+              </div>
+              
+              <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px; margin-bottom: 15px;">
+                <div class="form-group">
+                  <label for="settings-clinic-id-input" data-i18n="settings_clinic_id">รหัสคลินิก</label>
+                  <input type="text" id="settings-clinic-id-input" placeholder="เช่น 10999">
+                </div>
+                <div class="form-group">
+                  <label for="settings-clinic-province-input" data-i18n="settings_clinic_province">จังหวัด</label>
+                  <input type="text" id="settings-clinic-province-input" placeholder="เช่น กรุงเทพมหานคร">
+                </div>
+                <div class="form-group">
+                  <label for="settings-clinic-zone-input" data-i18n="settings_clinic_zone">เขตพื้นที่ สปสช.</label>
+                  <input type="text" id="settings-clinic-zone-input" placeholder="เช่น เขต 13">
+                </div>
+              </div>
+
+              <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px;">
+                <div class="form-group">
+                  <label for="settings-clinic-tel" data-i18n="settings_clinic_tel">เบอร์โทรศัพท์</label>
+                  <input type="text" id="settings-clinic-tel">
+                </div>
+                <div class="form-group">
+                  <label for="settings-practitioner" data-i18n="settings_practitioner">แพทย์/ผู้ดูแล</label>
+                  <input type="text" id="settings-practitioner">
+                </div>
+                <div class="form-group">
+                  <label for="settings-practitioner-title" data-i18n="settings_practitioner_title">ตำแหน่งวิชาชีพ</label>
+                  <input type="text" id="settings-practitioner-title" placeholder="เช่น พยาบาลวิชาชีพ">
+                </div>
+              </div>
+
+              <div class="form-group" style="margin-top: 15px;">
+                <label for="settings-output-dir" data-i18n="settings_output_dir">โฟลเดอร์บันทึกไฟล์ PDF</label>
+                <div style="display: flex; gap: 10px;">
+                  <input type="text" id="settings-output-dir" readonly style="flex-grow: 1; background: var(--bg-color);" placeholder="ค่าเริ่มต้น: โฟลเดอร์ generated_pdfs">
+                  <button type="button" id="settings-browse-output-dir-btn" class="btn btn-secondary" style="padding: 10px 16px;" data-i18n="browse">เลือก...</button>
+                </div>
+              </div>
+
+              <button type="button" id="settings-save-clinic-btn" class="btn" style="width: 100%; margin-top: 15px;" data-i18n="settings_save_clinic_btn">บันทึกข้อมูลคลินิก</button>
+            </form>
+          </div>
+        </div>
+      </section>
+
+
+    </main>
+  </div>
+
+  <!-- Custom Context Menu -->
+  <div id="context-menu" class="hidden">
+    <!-- Items dynamically injected based on context -->
+  </div>
+
+  <!-- EMR Visit History Modal -->
+  <div id="visit-history-modal" class="hidden" style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.5); display: flex; justify-content: center; align-items: center; z-index: 1010;">
+    <div class="login-card" style="width: 800px; max-height: 90vh; overflow-y: auto; padding: 25px;">
+      <h3 style="margin-bottom: 10px; text-align: center; font-weight: 700;" data-i18n="emr_history_title">Visit History</h3>
+      <h5 style="text-align: center; margin-bottom: 20px; color: var(--text-secondary);">
+        HN: <span id="history-patient-hn" style="font-weight: bold; color: var(--primary-color);"></span> | 
+        Name: <span id="history-patient-name" style="font-weight: bold; color: var(--text-color);"></span>
+      </h5>
+      
+      <div class="data-table-container" style="max-height: 400px; overflow-y: auto;">
+        <table class="data-table" style="font-size: 14px;">
+          <thead>
+            <tr>
+              <th data-i18n="table_date">Date & Time</th>
+              <th data-i18n="table_symptoms">Chief Complaint</th>
+              <th data-i18n="table_diagnosis">Diagnosis</th>
+              <th data-i18n="table_action">Actions</th>
+            </tr>
+          </thead>
+          <tbody id="history-table-body">
+            <!-- Populated via Javascript -->
+          </tbody>
+        </table>
+      </div>
+      
+      <div style="text-align: right; margin-top: 20px;">
+        <button type="button" id="history-close-btn" class="btn btn-secondary" style="padding: 10px 24px;" data-i18n="close">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- EMR Visit Details Modal (Read-only) -->
+  <div id="visit-details-modal" class="hidden" style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.6); display: flex; justify-content: center; align-items: center; z-index: 1020;">
+    <div class="login-card" style="width: 700px; max-height: 90vh; overflow-y: auto; padding: 25px;">
+      <h3 style="margin-bottom: 20px; text-align: center; font-weight: 700;" data-i18n="emr_details_title">Visit Examination Details</h3>
+      
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px; padding-bottom: 10px; border-bottom: 1px solid var(--border-color); font-size: 14px;">
+        <div>HN: <span id="detail-patient-hn" style="font-weight: 600;"></span></div>
+        <div>Name: <span id="detail-patient-name" style="font-weight: 600;"></span></div>
+        <div>Date: <span id="detail-visit-date" style="font-weight: 600;"></span></div>
+        <div>Time: <span id="detail-visit-time" style="font-weight: 600;"></span></div>
+      </div>
+
+      <div class="settings-grid" style="grid-template-columns: 1fr; gap: 15px; font-size: 14px;">
+        <!-- Vitals Block -->
+        <div class="settings-card" style="padding: 12px; background: var(--bg-color);">
+          <strong style="color: var(--primary-color);" data-i18n="visit_sec_vitals">1. Patient Vitals</strong>
+          <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-top: 8px; font-size: 13px;">
+            <div>BP: <span id="detail-vitals-bp">-</span></div>
+            <div>Pulse: <span id="detail-vitals-hr">-</span> bpm</div>
+            <div>RR: <span id="detail-vitals-rr">-</span> /min</div>
+            <div>Temp: <span id="detail-vitals-temp">-</span> °C</div>
+            <div>Weight: <span id="detail-vitals-weight">-</span> kg</div>
+            <div>Height: <span id="detail-vitals-height">-</span> cm</div>
+            <div>BMI: <span id="detail-vitals-bmi">-</span></div>
+          </div>
+        </div>
+
+        <!-- Clinical Block -->
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+          <div class="form-group">
+            <label style="font-weight: bold; font-size: 12px;" data-i18n="visit_symptoms">Chief Complaint</label>
+            <div id="detail-symptoms" style="padding: 8px; border: 1px solid var(--border-color); border-radius: 6px; background: var(--bg-color); min-height: 45px; overflow-wrap: break-word;"></div>
+          </div>
+          <div class="form-group">
+            <label style="font-weight: bold; font-size: 12px;" data-i18n="visit_present_illness">Present Illness</label>
+            <div id="detail-present-illness" style="padding: 8px; border: 1px solid var(--border-color); border-radius: 6px; background: var(--bg-color); min-height: 45px; overflow-wrap: break-word;"></div>
+          </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+          <div class="form-group">
+            <label style="font-weight: bold; font-size: 12px;" data-i18n="visit_past_history">Past History</label>
+            <div id="detail-past-history" style="padding: 8px; border: 1px solid var(--border-color); border-radius: 6px; background: var(--bg-color); min-height: 45px; overflow-wrap: break-word;"></div>
+          </div>
+          <div class="form-group">
+            <label style="font-weight: bold; font-size: 12px;" data-i18n="visit_pe_notes">Physical Exam</label>
+            <div id="detail-pe" style="padding: 8px; border: 1px solid var(--border-color); border-radius: 6px; background: var(--bg-color); min-height: 45px; overflow-wrap: break-word;"></div>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label style="font-weight: bold; font-size: 12px;" data-i18n="visit_diagnosis">Diagnosis</label>
+          <div id="detail-diagnosis" style="padding: 8px; border: 1px solid var(--border-color); border-radius: 6px; background: var(--bg-color); min-height: 45px; overflow-wrap: break-word; font-weight: bold; color: var(--primary-color);"></div>
+        </div>
+
+        <div class="form-group">
+          <label style="font-weight: bold; font-size: 12px;" data-i18n="visit_treatment_label">Treatment, Procedures & Advice</label>
+          <div id="detail-treatment" style="padding: 10px; border: 1px solid var(--border-color); border-radius: 6px; background: var(--bg-color); min-height: 60px; white-space: pre-wrap; overflow-wrap: break-word;"></div>
+        </div>
+      </div>
+
+      <div style="display: flex; gap: 10px; margin-top: 25px;">
+        <button type="button" id="detail-print-btn" class="btn" style="flex: 1;" data-i18n="visit_print_pdf">Reprint PDF</button>
+        <button type="button" id="detail-close-btn" class="btn btn-secondary" style="flex: 1;" data-i18n="close">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Auto Update Modal -->
+  <div id="update-modal" class="hidden" style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.6); display: flex; justify-content: center; align-items: center; z-index: 9999;">
+    <div class="login-card" style="width: 450px; padding: 30px; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); background: var(--card-bg, #ffffff);">
+      <div style="text-align: center; margin-bottom: 20px;">
+        <div style="font-size: 40px; color: var(--primary-color, #2ec4b6); margin-bottom: 10px;">🔄</div>
+        <h3 id="update-title" style="margin: 0; font-weight: 700; color: var(--text-color, #333);">พบเวอร์ชันใหม่!</h3>
+        <p id="update-version" style="font-size: 14px; color: #888; margin: 5px 0 0 0;"></p>
+      </div>
+
+      <div id="update-notes-container" style="background: var(--bg-color, #f8f9fa); border-radius: 8px; padding: 12px; margin-bottom: 20px; max-height: 120px; overflow-y: auto; font-size: 13px; color: var(--text-color, #555);">
+        <strong style="display: block; margin-bottom: 5px;">สิ่งใหม่ในเวอร์ชันนี้:</strong>
+        <div id="update-notes">ไม่มีบันทึกการเปลี่ยนแปลง</div>
+      </div>
+
+      <div id="update-progress-container" class="hidden" style="margin-bottom: 20px;">
+        <div style="display: flex; justify-content: space-between; font-size: 12px; margin-bottom: 5px; color: var(--text-color, #666);">
+          <span id="update-progress-status">กำลังดาวน์โหลด...</span>
+          <span id="update-progress-percent">0%</span>
+        </div>
+        <div style="width: 100%; height: 8px; background: #e9ecef; border-radius: 4px; overflow: hidden;">
+          <div id="update-progress-bar" style="width: 0%; height: 100%; background: var(--primary-color, #2ec4b6); transition: width 0.2s ease;"></div>
+        </div>
+      </div>
+
+      <div id="update-actions" style="display: flex; gap: 10px; justify-content: flex-end;">
+        <button type="button" id="update-cancel-btn" class="btn btn-secondary" style="flex: 1; padding: 10px 16px;">ไว้ทีหลัง</button>
+        <button type="button" id="update-action-btn" class="btn" style="flex: 1; padding: 10px 16px; background: var(--primary-color, #2ec4b6); color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 600;">ดาวน์โหลดเลย</button>
+      </div>
+    </div>
+  </div>
+
+</body>
+</html>
