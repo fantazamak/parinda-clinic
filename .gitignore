@@ -5,3 +5,5 @@ generated_pdfs/
 *.log
 test-results/
 .env
+build_and_publish.bat
+push_code.bat
