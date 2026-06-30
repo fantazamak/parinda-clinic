@@ -165,7 +165,7 @@ app.whenReady().then(() => {
 
   // Security: Enforce Content Security Policy (CSP)
   session.defaultSession.webRequest.onHeadersReceived((details, callback) => {
-    const isPdfPreview = details.url && (details.url.startsWith('file://') || details.url.includes('.pdf'));
+    const isPdfPreview = details.url && /\.pdf(?:[?#]|$)/i.test(details.url);
     const csp = isPdfPreview 
       ? 'default-src \'none\'; img-src \'self\' data:; style-src \'unsafe-inline\';'
       : "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self'";
@@ -338,7 +338,7 @@ app.whenReady().then(() => {
 
   // Check for updates after window is created
   if (app.isPackaged) {
-    autoUpdater.checkForUpdatesAndNotify().catch(err => {
+    autoUpdater.checkForUpdates().catch(err => {
       console.error('Error checking for updates:', err);
     });
   } else {
