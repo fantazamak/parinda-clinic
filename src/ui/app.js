@@ -136,10 +136,61 @@ document.addEventListener('DOMContentLoaded', async () => {
         document.addEventListener('keydown', keyHandler);
       }, 150);
     };
-  }
+}
 
-  // Translations dictionary for Thai & English
-  const translations = {
+   // Confirmation Popup Functions
+   function showConfirmPopup(message, callback) {
+     const popup = document.getElementById('confirm-popup');
+     const popupMessage = document.getElementById('confirm-popup-message');
+     const popupTitle = document.getElementById('confirm-popup-title');
+     const popupCancel = document.getElementById('confirm-popup-cancel');
+     const popupConfirm = document.getElementById('confirm-popup-confirm');
+     
+     const lang = currentSettings.lang || 'th';
+     const isTh = lang === 'th';
+     
+     popupTitle.textContent = isTh ? 'ยืนยันการดำเนินการ' : 'Confirm Action';
+     popupMessage.textContent = message;
+     
+     const confirmText = isTh ? 'ยืนยัน' : 'Confirm';
+     const cancelText = isTh ? 'ยกเลิก' : 'Cancel';
+     popupConfirm.textContent = isTh ? 'ลบข้อมูล' : 'Delete';
+     popupCancel.textContent = cancelText;
+     
+     popup.classList.remove('hidden');
+     popupConfirm.focus();
+     
+     const cleanup = () => {
+       popup.classList.add('hidden');
+       popupConfirm.removeEventListener('click', onConfirm);
+       popupCancel.removeEventListener('click', onCancel);
+       document.removeEventListener('keydown', onKeydown);
+     };
+     
+     const onConfirm = () => {
+       cleanup();
+       callback(true);
+     };
+     
+     const onCancel = () => {
+       cleanup();
+       callback(false);
+     };
+     
+     const onKeydown = (e) => {
+       if (e.key === 'Escape') {
+         e.preventDefault();
+         onCancel();
+       }
+     };
+     
+     popupConfirm.addEventListener('click', onConfirm);
+     popupCancel.addEventListener('click', onCancel);
+     document.addEventListener('keydown', onKeydown);
+   }
+
+   // Translations dictionary for Thai & English
+   const translations = {
     th: {
       nav_dashboard: "แดชบอร์ด",
       nav_patients: "เวชระเบียน",
@@ -572,19 +623,6 @@ document.addEventListener('DOMContentLoaded', async () => {
       }
     });
 
-    // Update Header title translation dynamically
-    const headerTitle = document.getElementById('header-title');
-    if (headerTitle) {
-      const activeNav = Object.keys(navItems).find(navId => navItems[navId] === targetId);
-      if (activeNav) {
-        const headerKey = activeNav.replace('nav-', 'header_');
-        const lang = currentSettings.lang || 'th';
-        if (translations[lang] && translations[lang][headerKey]) {
-          headerTitle.textContent = translations[lang][headerKey];
-        }
-      }
-    }
-
     // Refresh view specific logic
     if (targetId === 'dashboard-page') refreshDashboardView();
     if (targetId === 'patients-page') refreshPatientsView();
@@ -927,13 +965,16 @@ document.addEventListener('DOMContentLoaded', async () => {
       deleteBtn.style.opacity = '0.7';
       deleteBtn.textContent = isTh ? 'ลบ' : 'Del';
       deleteBtn.title = isTh ? 'ลบรายการนี้' : 'Delete this entry';
-      deleteBtn.addEventListener('click', async () => {
-        const confirmMsg = isTh ? 'ต้องการลบรายการนี้ใช่ไหม?' : 'Delete this transaction?';
-        if (!confirm(confirmMsg)) return;
-        transactions.splice(realIdx, 1);
-        if (window.api) await window.api.dbWrite('transactions', transactions);
-        refreshDashboardView();
-      });
+deleteBtn.addEventListener('click', async () => {
+         const confirmMsg = isTh ? 'ต้องการลบรายการนี้ใช่ไหม?' : 'Delete this transaction?';
+         showConfirmPopup(confirmMsg, (confirmed) => {
+           if (confirmed) {
+             transactions.splice(realIdx, 1);
+             if (window.api) window.api.dbWrite('transactions', transactions);
+             refreshDashboardView();
+           }
+         });
+       });
 
       rightDiv.appendChild(amountSpan);
       rightDiv.appendChild(deleteBtn);
@@ -942,6 +983,203 @@ document.addEventListener('DOMContentLoaded', async () => {
       expenseListEl.appendChild(div);
     });
   }
+
+  // Chart rendering functions
+  let currentChartType = 'line';
+
+  function renderLineChart(ctx, data, labels) {
+    const width = ctx.canvas.width;
+    const height = ctx.canvas.height;
+    const padding = 40;
+    const chartWidth = width - padding * 2;
+    const chartHeight = height - padding * 2;
+
+    const maxVal = Math.max(...data, 100);
+    const minVal = Math.min(...data, 0);
+
+    ctx.clearRect(0, 0, width, height);
+    ctx.font = '12px Inter, Sarabun, sans-serif';
+
+    // Draw axes
+    ctx.strokeStyle = getComputedStyle(document.documentElement).getPropertyValue('--border-color') || '#e2e8f0';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(padding, padding);
+    ctx.lineTo(padding, height - padding);
+    ctx.lineTo(width - padding, height - padding);
+    ctx.stroke();
+
+    // Draw grid lines
+    ctx.strokeStyle = getComputedStyle(document.documentElement).getPropertyValue('--border-color') || '#e2e8f0';
+    ctx.lineWidth = 0.5;
+    for (let i = 0; i <= 4; i++) {
+      const y = padding + (chartHeight / 4) * i;
+      ctx.beginPath();
+      ctx.moveTo(padding, y);
+      ctx.lineTo(width - padding, y);
+      ctx.stroke();
+    }
+
+    // Draw line
+    const primaryColor = getComputedStyle(document.documentElement).getPropertyValue('--primary-color') || '#10b981';
+    ctx.strokeStyle = primaryColor;
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    data.forEach((val, i) => {
+      const x = padding + (chartWidth / (labels.length - 1 || 1)) * i;
+      const y = height - padding - ((val - minVal) / (maxVal - minVal || 1)) * chartHeight;
+      if (i === 0) ctx.moveTo(x, y);
+      else ctx.lineTo(x, y);
+    });
+    ctx.stroke();
+
+    // Draw points
+    data.forEach((val, i) => {
+      const x = padding + (chartWidth / (labels.length - 1 || 1)) * i;
+      const y = height - padding - ((val - minVal) / (maxVal - minVal || 1)) * chartHeight;
+      ctx.fillStyle = primaryColor;
+      ctx.beginPath();
+      ctx.arc(x, y, 4, 0, Math.PI * 2);
+      ctx.fill();
+    });
+
+    // Draw labels
+    ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--text-secondary') || '#64748b';
+    labels.forEach((label, i) => {
+      const x = padding + (chartWidth / (labels.length - 1 || 1)) * i;
+      ctx.fillText(label, x - 15, height - padding + 20);
+    });
+  }
+
+  function renderBarChart(ctx, data, labels) {
+    const width = ctx.canvas.width;
+    const height = ctx.canvas.height;
+    const padding = 40;
+    const chartWidth = width - padding * 2;
+    const chartHeight = height - padding * 2;
+
+    const maxVal = Math.max(...data, 100);
+
+    ctx.clearRect(0, 0, width, height);
+    ctx.font = '12px Inter, Sarabun, sans-serif';
+
+    const barWidth = chartWidth / data.length * 0.7;
+    const barSpacing = chartWidth / data.length;
+
+    data.forEach((val, i) => {
+      const x = padding + barSpacing * i + barSpacing * 0.15;
+      const barHeight = (val / maxVal) * chartHeight;
+      const y = height - padding - barHeight;
+
+      ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--primary-color') || '#10b981';
+      ctx.fillRect(x, y, barWidth, barHeight);
+
+      ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--text-secondary') || '#64748b';
+      ctx.fillText(labels[i], x + barWidth / 2 - 15, height - padding + 20);
+    });
+  }
+
+  function renderPieChart(ctx, data, labels) {
+    const width = ctx.canvas.width;
+    const height = ctx.canvas.height;
+    const centerX = width / 2;
+    const centerY = height / 2;
+    const radius = Math.min(width, height) / 2 - 60;
+
+    ctx.clearRect(0, 0, width, height);
+    ctx.font = '12px Inter, Sarabun, sans-serif';
+
+    const total = data.reduce((a, b) => a + b, 0) || 1;
+    let currentAngle = -Math.PI / 2;
+
+    const colors = ['#10b981', '#3b82f6', '#ef4444', '#f59e0b', '#ec4899', '#64748b'];
+
+    data.forEach((val, i) => {
+      const sliceAngle = (val / total) * 2 * Math.PI;
+      ctx.beginPath();
+      ctx.moveTo(centerX, centerY);
+      ctx.arc(centerX, centerY, radius, currentAngle, currentAngle + sliceAngle);
+      ctx.closePath();
+      ctx.fillStyle = colors[i % colors.length];
+      ctx.fill();
+
+      // Draw label
+      const labelAngle = currentAngle + sliceAngle / 2;
+      const labelX = centerX + (radius + 25) * Math.cos(labelAngle);
+      const labelY = centerY + (radius + 25) * Math.sin(labelAngle);
+      ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--text-color') || '#1e293b';
+      ctx.fillText(labels[i], labelX - 20, labelY);
+
+      currentAngle += sliceAngle;
+    });
+  }
+
+  function refreshDashboardChart() {
+    const canvas = document.getElementById('dashboard-chart');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    canvas.width = canvas.parentElement.offsetWidth;
+    canvas.height = 280;
+
+    const startDateVal = document.getElementById('dashboard-start-date').value;
+    const endDateVal = document.getElementById('dashboard-end-date').value;
+
+    let filteredTxs = transactions;
+    if (startDateVal) filteredTxs = filteredTxs.filter(t => t.date >= startDateVal);
+    if (endDateVal) filteredTxs = filteredTxs.filter(t => t.date <= endDateVal);
+
+    const months = {};
+    filteredTxs.forEach(t => {
+      if (!months[t.date]) months[t.date] = { income: 0, expense: 0 };
+      if (t.type === 'income') months[t.date].income += Number(t.amount);
+      else months[t.date].expense += Number(t.amount);
+    });
+
+    const dates = Object.keys(months).sort();
+    const incomeData = dates.map(d => months[d].income);
+    const expenseData = dates.map(d => months[d].expense);
+
+    if (currentChartType === 'line') {
+      const combined = incomeData.map((inc, i) => inc - expenseData[i]);
+      renderLineChart(ctx, combined, dates.map(d => d.slice(5)));
+    } else if (currentChartType === 'bar') {
+      const visitsPerMonth = visits.reduce((acc, v) => {
+        if (!acc[v.date]) acc[v.date] = 0;
+        acc[v.date]++;
+        return acc;
+      }, {});
+      const visitData = dates.map(d => visitsPerMonth[d] || 0);
+      renderBarChart(ctx, visitData, dates.map(d => d.slice(5)));
+    } else if (currentChartType === 'pie') {
+      const lowStock = products.filter(p => p.stock <= p.minStockAlert).length;
+      const normalStock = products.length - lowStock;
+      renderPieChart(ctx, [normalStock, lowStock], ['Normal', 'Low Stock']);
+    }
+  }
+
+  // Chart toggle buttons
+  setTimeout(() => {
+    document.querySelectorAll('.chart-toggle-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.chart-toggle-btn').forEach(b => b.classList.remove('btn-primary', 'btn-secondary'));
+        btn.classList.add('btn-primary');
+        currentChartType = btn.id.includes('line') ? 'line' : btn.id.includes('bar') ? 'bar' : 'pie';
+        refreshDashboardChart();
+      });
+    });
+    document.getElementById('chart-btn-line')?.classList.add('btn-primary');
+    const chartContainer = document.getElementById('chart-container');
+    if (chartContainer) chartContainer.style.display = 'block';
+  }, 100);
+
+  // Override chart rendering on dashboard view
+  const originalRefreshDashboardView = refreshDashboardView;
+  refreshDashboardView = function() {
+    originalRefreshDashboardView.apply(this, arguments);
+    setTimeout(() => refreshDashboardChart(), 50);
+  };
 
   // Dashboard filter apply
   const applyFilterBtn = document.getElementById('dashboard-apply-filter-btn');
@@ -1079,6 +1317,27 @@ document.addEventListener('DOMContentLoaded', async () => {
         startVisitForPatient(p);
       });
       tdActions.appendChild(btnVisit);
+
+      const btnDelete = document.createElement('button');
+      btnDelete.className = 'btn btn-danger';
+      btnDelete.style.padding = '4px 8px';
+      btnDelete.style.fontSize = '12px';
+      btnDelete.style.marginLeft = '5px';
+      btnDelete.textContent = isTh ? 'ลบ' : 'Delete';
+      btnDelete.addEventListener('click', () => {
+        const confirmMsg = isTh ? `ต้องการลบประวัติคนไข้ ${p.name} ใช่ไหม?` : `Delete patient ${p.name}?`;
+        showConfirmPopup(confirmMsg, (confirmed) => {
+          if (confirmed) {
+            const idx = patients.findIndex(patient => patient.hn === p.hn);
+            if (idx !== -1) {
+              patients.splice(idx, 1);
+              if (window.api) window.api.dbWrite('patients', patients);
+              refreshPatientsView();
+            }
+          }
+        });
+      });
+      tdActions.appendChild(btnDelete);
 
       tr.appendChild(tdActions);
       tableBody.appendChild(tr);
@@ -1588,8 +1847,12 @@ document.addEventListener('DOMContentLoaded', async () => {
       btnRemove.style.fontSize = '12px';
       btnRemove.textContent = isTh ? 'ลบ' : 'Remove';
       btnRemove.addEventListener('click', () => {
-        activeVisitPrescriptions.splice(idx, 1);
-        refreshPrescriptionTable();
+        showConfirmPopup(isTh ? 'ลบรายการยาออกจากใบสั่งใช่ไหม?' : 'Remove prescription item?', (confirmed) => {
+          if (confirmed) {
+            activeVisitPrescriptions.splice(idx, 1);
+            refreshPrescriptionTable();
+          }
+        });
       });
       tdAction.appendChild(btnRemove);
       tr.appendChild(tdAction);
@@ -1972,6 +2235,27 @@ document.addEventListener('DOMContentLoaded', async () => {
         openRestockModal(p);
       });
       tdActions.appendChild(btnRestock);
+
+      const btnDelete = document.createElement('button');
+      btnDelete.className = 'btn btn-danger';
+      btnDelete.style.padding = '4px 8px';
+      btnDelete.style.fontSize = '12px';
+      btnDelete.style.marginLeft = '5px';
+      btnDelete.textContent = isTh ? 'ลบ' : 'Delete';
+      btnDelete.addEventListener('click', () => {
+        const confirmMsg = isTh ? `ต้องการลบสินค้า ${p.name} ใช่ไหม?` : `Delete product ${p.name}?`;
+        showConfirmPopup(confirmMsg, (confirmed) => {
+          if (confirmed) {
+            const idx = products.findIndex(prod => prod.id === p.id);
+            if (idx !== -1) {
+              products.splice(idx, 1);
+              if (window.api) window.api.dbWrite('products', products);
+              refreshInventoryView();
+            }
+          }
+        });
+      });
+      tdActions.appendChild(btnDelete);
 
       tr.appendChild(tdActions);
       tableBody.appendChild(tr);
@@ -2409,8 +2693,12 @@ document.addEventListener('DOMContentLoaded', async () => {
       btnRemove.style.fontSize = '11px';
       btnRemove.textContent = isTh ? 'ลบ' : 'Remove';
       btnRemove.addEventListener('click', () => {
-        posCart.splice(idx, 1);
-        refreshPosCartTable();
+        showConfirmPopup(isTh ? 'ลบสินค้าออกจากตะกร้าใช่ไหม?' : 'Remove item from cart?', (confirmed) => {
+          if (confirmed) {
+            posCart.splice(idx, 1);
+            refreshPosCartTable();
+          }
+        });
       });
       tdAction.appendChild(btnRemove);
       tr.appendChild(tdAction);
@@ -2537,6 +2825,17 @@ document.addEventListener('DOMContentLoaded', async () => {
     document.getElementById('settings-practitioner-title').value = currentSettings.defaultPractitionerTitle || '';
     document.getElementById('settings-output-dir').value = currentSettings.outputPdfDir || '';
     document.getElementById('settings-theme-select').value = currentSettings.theme || 'clinic-green';
+
+    // Set active theme preview
+    setTimeout(() => {
+      document.querySelectorAll('.theme-preview-item').forEach(item => {
+        if (item.getAttribute('data-theme') === (currentSettings.theme || 'clinic-green')) {
+          item.classList.add('active');
+        } else {
+          item.classList.remove('active');
+        }
+      });
+    }, 100);
   }
 
   // Credentials Update
@@ -2577,6 +2876,21 @@ document.addEventListener('DOMContentLoaded', async () => {
     document.getElementById('settings-theme-select').addEventListener('change', (e) => {
       applyTheme(e.target.value);
     });
+
+    // Theme preview thumbnail click handlers
+    setTimeout(() => {
+      document.querySelectorAll('.theme-preview-item').forEach(item => {
+        item.addEventListener('click', () => {
+          const theme = item.getAttribute('data-theme');
+          if (theme) {
+            document.getElementById('settings-theme-select').value = theme;
+            applyTheme(theme);
+            document.querySelectorAll('.theme-preview-item').forEach(i => i.classList.remove('active'));
+            item.classList.add('active');
+          }
+        });
+      });
+    }, 100);
   }
 
   // Clinic Info Update
@@ -2859,6 +3173,10 @@ document.addEventListener('DOMContentLoaded', async () => {
         <span>📋</span>
         <span>${isTh ? 'คัดลอก HN' : 'Copy HN'}</span>
       </div>
+      <div class="context-menu-item" id="ctx-delete-patient" style="color: var(--error-color);">
+        <span>🗑️</span>
+        <span>${isTh ? 'ลบประวัติคนไข้' : 'Delete Patient'}</span>
+      </div>
     `;
 
     menu.querySelector('#ctx-start-visit').addEventListener('click', () => {
@@ -2879,6 +3197,21 @@ document.addEventListener('DOMContentLoaded', async () => {
     menu.querySelector('#ctx-copy-hn').addEventListener('click', () => {
       navigator.clipboard.writeText(patient.hn);
       alert(isTh ? 'คัดลอก HN ลงคลิปบอร์ดแล้ว!' : 'HN copied to clipboard!');
+      menu.classList.add('hidden');
+    });
+
+    menu.querySelector('#ctx-delete-patient').addEventListener('click', () => {
+      const confirmMsg = isTh ? `ต้องการลบประวัติคนไข้ ${patient.name} ใช่ไหม?` : `Delete patient ${patient.name}?`;
+      showConfirmPopup(confirmMsg, (confirmed) => {
+        if (confirmed) {
+          const idx = patients.findIndex(p => p.hn === patient.hn);
+          if (idx !== -1) {
+            patients.splice(idx, 1);
+            if (window.api) window.api.dbWrite('patients', patients);
+            refreshPatientsView();
+          }
+        }
+      });
       menu.classList.add('hidden');
     });
   }
@@ -2905,6 +3238,10 @@ document.addEventListener('DOMContentLoaded', async () => {
         <span>📋</span>
         <span>${isTh ? 'คัดลอกรหัสสินค้า' : 'Copy Product ID'}</span>
       </div>
+      <div class="context-menu-item" id="ctx-delete-product" style="color: var(--error-color);">
+        <span>🗑️</span>
+        <span>${isTh ? 'ลบสินค้า' : 'Delete Product'}</span>
+      </div>
     `;
 
     menu.querySelector('#ctx-edit-product').addEventListener('click', () => {
@@ -2922,6 +3259,21 @@ document.addEventListener('DOMContentLoaded', async () => {
     menu.querySelector('#ctx-copy-prod-id').addEventListener('click', () => {
       navigator.clipboard.writeText(product.id);
       alert(isTh ? 'คัดลอกรหัสสินค้าลงคลิปบอร์ดแล้ว!' : 'Product ID copied to clipboard!');
+      menu.classList.add('hidden');
+    });
+
+    menu.querySelector('#ctx-delete-product').addEventListener('click', () => {
+      const confirmMsg = isTh ? `ต้องการลบสินค้า ${product.name} ใช่ไหม?` : `Delete product ${product.name}?`;
+      showConfirmPopup(confirmMsg, (confirmed) => {
+        if (confirmed) {
+          const idx = products.findIndex(p => p.id === product.id);
+          if (idx !== -1) {
+            products.splice(idx, 1);
+            if (window.api) window.api.dbWrite('products', products);
+            refreshInventoryView();
+          }
+        }
+      });
       menu.classList.add('hidden');
     });
   }

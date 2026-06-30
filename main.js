@@ -165,12 +165,15 @@ app.whenReady().then(() => {
 
   // Security: Enforce Content Security Policy (CSP)
   session.defaultSession.webRequest.onHeadersReceived((details, callback) => {
+    const isPdfPreview = details.url && (details.url.startsWith('file://') || details.url.includes('.pdf'));
+    const csp = isPdfPreview 
+      ? 'default-src \'none\'; img-src \'self\' data:; style-src \'unsafe-inline\';'
+      : "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self'";
+    
     callback({
       responseHeaders: {
         ...details.responseHeaders,
-        'Content-Security-Policy': [
-          "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self'"
-        ]
+        'Content-Security-Policy': [csp]
       }
     });
   });

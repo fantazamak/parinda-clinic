@@ -830,39 +830,20 @@ body {
 }
 
 /* ============================================================
-   APP HEADER (Top Bar)
+   TAB PAGES (Content Sections)
    ============================================================ */
 
-.app-header {
-  background: var(--header-bg);
-  backdrop-filter: blur(12px) saturate(150%);
-  -webkit-backdrop-filter: blur(12px) saturate(150%);
-  padding: 18px 30px;
-  border-bottom: 1px solid var(--border-color);
+.tab-page {
+  padding: 28px 30px;
+  flex-grow: 1;
   display: flex;
-  justify-content: space-between;
-  align-items: center;
-  box-shadow: var(--shadow-sm);
-  position: sticky;
-  top: 0;
-  z-index: 5;
-}
-
-.app-header h2 {
-  font-size: 20px;
-  font-weight: 700;
-  letter-spacing: -0.3px;
-}
-
-.header-meta {
-  font-size: 13px;
-  color: var(--text-secondary);
-  font-weight: 500;
+  flex-direction: column;
+  animation: fadeIn 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
 /* ============================================================
-   TAB PAGES (Content Sections)
-   ============================================================ */
+    TAB PAGES (Content Sections)
+    ============================================================ */
 
 .tab-page {
   padding: 28px 30px;
@@ -1425,11 +1406,6 @@ body[data-theme="dark"] .data-table-container {
   border-color: var(--border-color);
 }
 
-body[data-theme="dark-mode"] .header-meta,
-body[data-theme="dark"] .header-meta {
-  color: var(--text-secondary);
-}
-
 body[data-theme="dark-mode"] .stat-card .label,
 body[data-theme="dark"] .stat-card .label {
   color: var(--text-secondary);
@@ -1447,7 +1423,6 @@ body[data-theme="dark"] .form-group label {
 @media print {
   #sidebar,
   .sidebar-footer,
-  .app-header,
   .action-bar {
     display: none !important;
   }
@@ -1793,6 +1768,101 @@ body[data-theme="dark-mode"] #update-modal .login-card {
   background: rgba(30, 41, 59, 0.95);
   border: 1px solid rgba(255, 255, 255, 0.1);
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+}
+
+.btn-primary {
+  background: var(--primary-color) !important;
+  background: var(--accent-gradient) !important;
+}
+
+.btn-primary:hover {
+  box-shadow: 0 4px 12px rgba(var(--primary-rgb), 0.35);
+}
+
+/* Charts Section */
+.charts-section {
+  background: var(--card-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 14px;
+  padding: 20px;
+  margin-top: 20px;
+  transition: box-shadow 0.25s ease;
+}
+
+.charts-section:hover {
+  box-shadow: var(--shadow-md);
+}
+
+.charts-section h4 {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text-color);
+  margin: 0;
+}
+
+.chart-toggle-btn {
+  padding: 6px 12px;
+  font-size: 12px;
+  min-width: auto;
+}
+
+#chart-container {
+  position: relative;
+  height: 280px;
+  width: 100%;
+}
+
+#dashboard-chart {
+  width: 100%;
+  height: 100%;
+}
+
+/* Theme Preview in Settings */
+.theme-preview-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+  gap: 12px;
+  margin-top: 12px;
+  padding: 16px;
+  background: var(--bg-color);
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
+}
+
+.theme-preview-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 8px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: 2px solid transparent;
+}
+
+.theme-preview-item:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow);
+}
+
+.theme-preview-item.active {
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 2px var(--primary-light);
+}
+
+.theme-preview-swatch {
+  width: 40px;
+  height: 24px;
+  border-radius: 6px;
+  border: 1px solid var(--border-color);
+}
+
+.theme-preview-label {
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  text-align: center;
 }
 
 
