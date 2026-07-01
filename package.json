@@ -6,7 +6,7 @@
   "scripts": {
     "start": "electron .",
     "build": "electron-builder --dir",
-    "build:win": "electron-builder --win",
+    "build:win": "electron-builder --win --publish never",
     "test:e2e": "playwright test --config=tests/e2e/config/playwright.config.js",
     "test:e2e:ui": "playwright test --config=tests/e2e/config/playwright.config.js --ui",
     "test:e2e:debug": "playwright test --config=tests/e2e/config/playwright.config.js --debug",
