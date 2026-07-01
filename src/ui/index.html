@@ -102,8 +102,8 @@
       <!-- Pages -->
       
 <!-- Dashboard Page -->
-       <section id="dashboard-page" class="tab-page">
-         <div class="action-bar" style="background: var(--card-bg); padding: 15px; border-radius: 8px; border: 1px solid var(--border-color); margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap;">
+       <section id="dashboard-page" class="tab-page dashboard-page">
+         <div class="action-bar dashboard-toolbar" style="background: var(--card-bg); padding: 15px; border-radius: 8px; border: 1px solid var(--border-color); margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap;">
            <h3 class="page-title" style="margin: 0;" data-i18n="header_dashboard">Clinic Performance & Operations</h3>
            <select id="lang-select" class="lang-select" style="padding: 4px 8px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--card-bg); color: var(--text-color); cursor: pointer; font-size: 14px; font-weight: 500;">
              <option value="th">ไทย</option>
@@ -112,19 +112,35 @@
          </div>
         
         <!-- Date Filters -->
-        <div class="action-bar" style="background: var(--card-bg); padding: 15px; border-radius: 8px; border: 1px solid var(--border-color); margin-bottom: 20px; display: flex; gap: 15px; align-items: center; flex-wrap: wrap;">
-          <div style="display: flex; gap: 10px; align-items: center;">
-            <label for="dashboard-start-date" style="font-weight: 600;" data-i18n="filter_start_date">Start Date:</label>
-            <input type="date" id="dashboard-start-date" style="padding: 6px; border: 1px solid var(--border-color); border-radius: 4px;">
+         <div class="dashboard-filter-bar" aria-label="ช่วงเวลารายงาน">
+          <div class="dashboard-period-heading">
+            <span class="dashboard-period-label" data-i18n="dashboard_period_label">ช่วงเวลารายงาน</span>
+            <span id="dashboard-period-summary" class="dashboard-period-summary" aria-live="polite">ข้อมูลทั้งหมด</span>
           </div>
-          <div style="display: flex; gap: 10px; align-items: center;">
-            <label for="dashboard-end-date" style="font-weight: 600;" data-i18n="filter_end_date">End Date:</label>
-            <input type="date" id="dashboard-end-date" style="padding: 6px; border: 1px solid var(--border-color); border-radius: 4px;">
+          <div class="dashboard-period-options" role="group" aria-label="เลือกช่วงเวลา">
+            <button type="button" class="dashboard-period-btn is-active" data-period="all" aria-pressed="true" data-i18n="period_all">ตลอดเวลา</button>
+            <button type="button" class="dashboard-period-btn" data-period="1d" aria-pressed="false" data-i18n="period_previous_day">1 วันก่อน</button>
+            <button type="button" class="dashboard-period-btn" data-period="3d" aria-pressed="false" data-i18n="period_3_days">3 วัน</button>
+            <button type="button" class="dashboard-period-btn" data-period="7d" aria-pressed="false" data-i18n="period_7_days">7 วัน</button>
+            <button type="button" class="dashboard-period-btn" data-period="1m" aria-pressed="false" data-i18n="period_1_month">1 เดือน</button>
+            <button type="button" class="dashboard-period-btn" data-period="1y" aria-pressed="false" data-i18n="period_1_year">1 ปี</button>
+            <button type="button" class="dashboard-period-btn" data-period="custom" aria-pressed="false" data-i18n="period_custom">กำหนดเอง</button>
           </div>
-          <button id="dashboard-apply-filter-btn" class="btn" style="padding: 8px 16px;" data-i18n="search">Apply Filter</button>
+          <div id="dashboard-custom-range" class="dashboard-custom-range hidden">
+            <div class="dashboard-filter-group">
+              <label for="dashboard-start-date" data-i18n="period_from">ตั้งแต่</label>
+              <input type="date" id="dashboard-start-date" name="dashboard-start-date">
+            </div>
+            <span class="dashboard-range-separator" aria-hidden="true" data-i18n="period_to">ถึง</span>
+            <div class="dashboard-filter-group">
+              <label for="dashboard-end-date" data-i18n="period_until">จนถึง</label>
+              <input type="date" id="dashboard-end-date" name="dashboard-end-date">
+            </div>
+            <button id="dashboard-apply-filter-btn" type="button" class="btn dashboard-apply-filter-btn" data-i18n="period_apply">ดูผล</button>
+          </div>
         </div>
 
-        <div class="dashboard-grid">
+        <div class="dashboard-grid dashboard-kpi-grid">
           <div class="stat-card patients-card">
             <div class="stat-card-header" style="display: flex; justify-content: space-between; align-items: flex-start; width: 100%;">
               <span class="label" data-i18n="dash_total_patients">Total Registered Patients</span>
@@ -174,9 +190,26 @@
           </div>
         </div>
 
-        <div class="settings-grid" style="margin-top: 20px;">
+        <div class="charts-section dashboard-charts-section" style="margin-top: 20px; background: var(--card-bg); padding: 20px; border-radius: 12px; border: 1px solid var(--border-color);">
+          <div class="dashboard-chart-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+            <div>
+              <h4 id="dashboard-chart-title" class="dashboard-chart-title" style="font-size: 16px; font-weight: 700; color: var(--text-color);" data-i18n="dashboard_chart_title">Financial Snapshot</h4>
+              <p id="dashboard-chart-caption" class="dashboard-chart-caption" data-i18n="dashboard_chart_caption">Switch between trend, flow, and stock views to scan the clinic's health at a glance.</p>
+            </div>
+            <div class="chart-toggle-group" style="display: flex; gap: 8px;">
+              <button id="chart-btn-line" class="btn btn-secondary chart-toggle-btn" style="padding: 6px 12px; font-size: 12px;" data-i18n="chart_profit">Profit</button>
+              <button id="chart-btn-bar" class="btn btn-secondary chart-toggle-btn" style="padding: 6px 12px; font-size: 12px;" data-i18n="chart_flow">Flow</button>
+              <button id="chart-btn-pie" class="btn btn-secondary chart-toggle-btn" style="padding: 6px 12px; font-size: 12px;" data-i18n="chart_stock">Stock</button>
+            </div>
+          </div>
+          <div id="chart-container" style="position: relative; height: 280px; width: 100%;">
+            <canvas id="dashboard-chart" style="max-height: 280px;"></canvas>
+          </div>
+        </div>
+
+        <div class="settings-grid dashboard-transaction-layout" style="margin-top: 20px;">
           <!-- Log Transaction Form -->
-          <div class="settings-card">
+          <div class="settings-card dashboard-transaction-form-card">
             <h4 data-i18n="dash_log_tx_title">บันทึกรายรับ-รายจ่าย</h4>
             <form id="expense-form" style="margin-top: 15px;">
               <div class="form-group">
@@ -215,7 +248,7 @@
           </div>
 
           <!-- Transaction/Expense List -->
-          <div class="settings-card">
+          <div class="settings-card dashboard-transaction-list-card">
 <h4 data-i18n="dash_recent_transactions">Recent Transactions / Expenses</h4>
              <div id="dashboard-expense-list" style="max-height: 320px; overflow-y: auto; overflow-x: visible; margin-top: 15px; font-size: 14px; line-height: 1.6; border: 1px solid var(--border-color); border-radius: 4px; padding: 0; background: var(--bg-color);">
                <!-- Dynamically populated -->
@@ -223,21 +256,7 @@
            </div>
          </div>
 
-         <!-- Charts Section -->
-         <div class="charts-section" style="margin-top: 20px; background: var(--card-bg); padding: 20px; border-radius: 12px; border: 1px solid var(--border-color);">
-           <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
-             <h4 style="font-size: 16px; font-weight: 700; color: var(--text-color);">Charts & Analytics</h4>
-             <div style="display: flex; gap: 8px;">
-               <button id="chart-btn-line" class="btn btn-secondary chart-toggle-btn" style="padding: 6px 12px; font-size: 12px;">Line</button>
-               <button id="chart-btn-bar" class="btn btn-secondary chart-toggle-btn" style="padding: 6px 12px; font-size: 12px;">Bar</button>
-               <button id="chart-btn-pie" class="btn btn-secondary chart-toggle-btn" style="padding: 6px 12px; font-size: 12px;">Pie</button>
-             </div>
-           </div>
-           <div id="chart-container" style="position: relative; height: 280px; width: 100%;">
-             <canvas id="dashboard-chart" style="max-height: 280px;"></canvas>
-           </div>
-         </div>
-       </section>
+        </section>
 
        <!-- Patients Page -->
       <section id="patients-page" class="tab-page hidden">
@@ -546,18 +565,25 @@
             <div class="visit-panel">
               <h4 style="font-size: 16px; font-weight: 700; margin-bottom: 18px; padding-bottom: 12px; border-bottom: 1px solid var(--border-color); color: var(--primary-color);" data-i18n="visit_sec_treatment">3. สั่งยา หัตถการ และการชำระเงิน</h4>
               
-              <div class="form-group" style="margin-top: 15px;">
-                <label for="visit-treatment" data-i18n="visit_treatment_label">Treatment, Procedures & Advice (การรักษา/หัตถการ/คำแนะนำ)</label>
-                <textarea id="visit-treatment" rows="3" placeholder="เช่น GG 1 เม็ด หลังอาหาร 3 มื้อ, แนะนำเช็ดตัวลดไข้..."></textarea>
+              <div class="visit-care-notes">
+                <div class="form-group">
+                  <label for="visit-treatment" data-i18n="visit_treatment_label">การรักษาและหัตถการ</label>
+                  <textarea id="visit-treatment" rows="3" placeholder="บันทึกการรักษาหรือหัตถการที่ทำ…"></textarea>
+                </div>
+                <div class="form-group visit-advice-field">
+                  <label for="visit-advice" data-i18n="visit_advice_label">คำแนะนำเพิ่มเติม</label>
+                  <textarea id="visit-advice" rows="3" placeholder="เช่น พักผ่อนให้เพียงพอ ดื่มน้ำมากขึ้น และกลับมาพบแพทย์หากอาการไม่ดีขึ้น…"></textarea>
+                </div>
               </div>
               
               <div class="form-group">
                 <label data-i18n="visit_prescribe_label">Prescribe Medications / Procedures</label>
-                <div style="display: flex; gap: 10px;">
+                <div class="prescription-entry-grid">
                   <select id="presc-product-select" style="flex-grow: 1;">
                     <!-- Dynamically populated from products -->
                   </select>
                   <input type="number" id="presc-qty-input" value="1" min="1" style="width: 80px;">
+                  <input type="text" id="presc-instructions-input" placeholder="วิธีใช้ เช่น ครั้งละ 1 เม็ด หลังอาหาร…" data-i18n="presc_instructions_placeholder">
                   <button type="button" id="add-presc-item-btn" class="btn" style="padding: 10px 15px;" data-i18n="add">Add</button>
                 </div>
               </div>
@@ -570,6 +596,7 @@
                       <th data-i18n="table_qty">Qty</th>
                       <th data-i18n="table_price">Price</th>
                       <th data-i18n="table_total">Total</th>
+                      <th data-i18n="table_instructions">วิธีใช้ / คำแนะนำ</th>
                       <th data-i18n="table_action">Action</th>
                     </tr>
                   </thead>
@@ -796,16 +823,34 @@
           <div class="settings-card">
             <h3 data-i18n="settings_auth_title">Authentication Credentials</h3>
             <div id="settings-auth-success-msg" class="success-message hidden" data-i18n="settings_success">Settings saved successfully!</div>
-            <form id="settings-credentials-form" onsubmit="return false;">
+            <form id="settings-username-form" class="credential-form" onsubmit="return false;">
+              <h4 data-i18n="settings_change_username">เปลี่ยนชื่อผู้ใช้</h4>
               <div class="form-group">
-                <label for="settings-username-input" data-i18n="settings_username">ชื่อผู้ใช้</label>
-                <input type="text" id="settings-username-input">
+                <label for="settings-username-input" data-i18n="settings_new_username">ชื่อผู้ใช้ใหม่</label>
+                <input type="text" id="settings-username-input" autocomplete="username" spellcheck="false">
               </div>
               <div class="form-group">
-                <label for="settings-password-input" data-i18n="settings_password">รหัสผ่าน</label>
-                <input type="password" id="settings-password-input">
+                <label for="settings-username-current-password" data-i18n="settings_current_password">รหัสผ่านปัจจุบัน</label>
+                <input type="password" id="settings-username-current-password" autocomplete="current-password">
               </div>
-              <button type="button" id="settings-save-auth-btn" class="btn" style="width: 100%; margin-top: 15px;" data-i18n="settings_save_auth_btn">บันทึกบัญชี</button>
+              <button type="button" id="settings-save-username-btn" class="btn" data-i18n="settings_save_username">เปลี่ยนชื่อผู้ใช้</button>
+            </form>
+            <div class="credential-divider"></div>
+            <form id="settings-password-form" class="credential-form" onsubmit="return false;">
+              <h4 data-i18n="settings_change_password">เปลี่ยนรหัสผ่าน</h4>
+              <div class="form-group">
+                <label for="settings-password-current" data-i18n="settings_current_password">รหัสผ่านปัจจุบัน</label>
+                <input type="password" id="settings-password-current" autocomplete="current-password">
+              </div>
+              <div class="form-group">
+                <label for="settings-password-new" data-i18n="settings_new_password">รหัสผ่านใหม่</label>
+                <input type="password" id="settings-password-new" minlength="6" autocomplete="new-password">
+              </div>
+              <div class="form-group">
+                <label for="settings-password-confirm" data-i18n="settings_confirm_password">ยืนยันรหัสผ่านใหม่</label>
+                <input type="password" id="settings-password-confirm" minlength="6" autocomplete="new-password">
+              </div>
+              <button type="button" id="settings-save-password-btn" class="btn" data-i18n="settings_save_password">เปลี่ยนรหัสผ่าน</button>
             </form>
           </div>
 
@@ -1029,6 +1074,14 @@
         <div class="form-group">
           <label style="font-weight: bold; font-size: 12px;" data-i18n="visit_treatment_label">Treatment, Procedures & Advice</label>
           <div id="detail-treatment" style="padding: 10px; border: 1px solid var(--border-color); border-radius: 6px; background: var(--bg-color); min-height: 60px; white-space: pre-wrap; overflow-wrap: break-word;"></div>
+        </div>
+        <div class="form-group">
+          <label style="font-weight: bold; font-size: 12px;" data-i18n="visit_advice_label">คำแนะนำเพิ่มเติม</label>
+          <div id="detail-advice" style="padding: 10px; border: 1px solid var(--border-color); border-radius: 6px; background: var(--bg-color); min-height: 60px; white-space: pre-wrap; overflow-wrap: break-word;"></div>
+        </div>
+        <div class="form-group">
+          <label style="font-weight: bold; font-size: 12px;" data-i18n="visit_prescriptions_details">รายการยาและวิธีใช้</label>
+          <div id="detail-prescriptions" class="detail-prescriptions"></div>
         </div>
       </div>
 

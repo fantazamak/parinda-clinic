@@ -82,8 +82,27 @@ test.describe('Dashboard Happy Path', () => {
     await expect(dashboardPage.incomeAmount).toBeVisible();
     await expect(dashboardPage.expenseAmount).toBeVisible();
     await expect(dashboardPage.profitAmount).toBeVisible();
+    await page.locator('[data-period="custom"]').click();
     await expect(dashboardPage.startDateInput).toBeVisible();
     await expect(dashboardPage.endDateInput).toBeVisible();
     await expect(dashboardPage.expenseAmountInput).toBeVisible();
+  });
+
+  test('TC-DASH-06: Quick period controls update dates and active state', async ({ page }) => {
+    const sevenDays = page.locator('[data-period="7d"]');
+    await sevenDays.click();
+
+    await expect(sevenDays).toHaveAttribute('aria-pressed', 'true');
+    await expect(page.locator('#dashboard-start-date')).not.toHaveValue('');
+    await expect(page.locator('#dashboard-end-date')).not.toHaveValue('');
+    await expect(page.locator('#dashboard-custom-range')).toBeHidden();
+
+    await page.locator('[data-period="custom"]').click();
+    await expect(page.locator('#dashboard-custom-range')).toBeVisible();
+  });
+
+  test('TC-DASH-07: Thai dates display Buddhist Era years', async ({ page }) => {
+    await page.locator('#lang-select').selectOption('th');
+    await expect(page.locator('#dashboard-expense-list')).toContainText('2569');
   });
 });

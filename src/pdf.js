@@ -1,6 +1,7 @@
 const PDFDocument = require('pdfkit');
 const fs = require('fs');
 const path = require('path');
+const { PassThrough } = require('stream');
 
 /**
  * Format date in Thai Buddhist Era format (e.g. วันที่ 1 เดือนมกราคม พ.ศ.2569)
@@ -73,7 +74,11 @@ function generatePatientVisitPdf(filePath, data) {
   return new Promise((resolve, reject) => {
     try {
       const doc = new PDFDocument({ size: 'A4', margin: 40 });
-      const stream = fs.createWriteStream(filePath);
+      const stream = filePath ? fs.createWriteStream(filePath) : new PassThrough();
+      const chunks = [];
+      if (!filePath) {
+        stream.on('data', chunk => chunks.push(Buffer.from(chunk)));
+      }
       doc.pipe(stream);
 
       // Determine font. On Windows, Tahoma supports Thai characters well.
@@ -231,10 +236,31 @@ function generatePatientVisitPdf(filePath, data) {
       doc.font(fontName).fontSize(9.5).text(data.diagnosis || '-', 60, doc.y + 2, { width: 480 });
       doc.moveDown(0.5);
 
-      // การรักษา/หัตถการ/คำแนะนำ
-      doc.font(fontBold).fontSize(10).text('การรักษา/หัตถการ/คำแนะนำ', 40, doc.y);
+      // การรักษา/หัตถการ
+      doc.font(fontBold).fontSize(10).text('การรักษา/หัตถการ', 40, doc.y);
       const treatmentNotes = data.treatment || '-';
       doc.font(fontName).fontSize(9.5).text(treatmentNotes, 60, doc.y + 2, { width: 480 });
+      doc.moveDown(0.5);
+
+      const prescriptions = Array.isArray(data.prescriptions) ? data.prescriptions : [];
+      doc.font(fontBold).fontSize(10).text('รายการยาและวิธีใช้', 40, doc.y);
+      if (prescriptions.length === 0) {
+        doc.font(fontName).fontSize(9.5).text('-', 60, doc.y + 2);
+      } else {
+        prescriptions.forEach((item, index) => {
+          const quantity = Number(item.quantity || 0);
+          const unit = item.unit || 'หน่วย';
+          doc.font(fontBold).fontSize(9.5).text(`${index + 1}. ${item.name || '-'}`, 60, doc.y + 2, { continued: true });
+          doc.font(fontName).text(`  ${quantity} ${unit}`);
+          doc.font(fontName).fontSize(9).fillColor('#475569')
+            .text(`วิธีใช้: ${item.instructions || '-'}`, 76, doc.y + 1, { width: 455 });
+          doc.fillColor('#000000');
+        });
+      }
+      doc.moveDown(0.5);
+
+      doc.font(fontBold).fontSize(10).text('คำแนะนำเพิ่มเติม', 40, doc.y);
+      doc.font(fontName).fontSize(9.5).text(data.advice || '-', 60, doc.y + 2, { width: 480 });
 
       // Signature Area (Bottom Right, matching template)
       const signatureY = doc.y > 680 ? doc.y + 30 : 700;
@@ -251,7 +277,9 @@ function generatePatientVisitPdf(filePath, data) {
       doc.end();
 
       stream.on('finish', () => {
-        resolve({ success: true, filePath });
+        resolve(filePath
+          ? { success: true, filePath }
+          : { success: true, buffer: Buffer.concat(chunks) });
       });
 
       stream.on('error', (err) => {
@@ -263,4 +291,9 @@ function generatePatientVisitPdf(filePath, data) {
   });
 }
 
-module.exports = { generatePatientVisitPdf };
+async function generatePatientVisitPdfBuffer(data) {
+  const result = await generatePatientVisitPdf(null, data);
+  return result.buffer;
+}
+
+module.exports = { generatePatientVisitPdf, generatePatientVisitPdfBuffer, formatThaiDate };

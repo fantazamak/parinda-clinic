@@ -85,17 +85,14 @@ test.describe('Pairwise Integration Tests', () => {
     await dashboardPage.goToSettings();
 
     // Change settings credentials
-    await settingsPage.updateCredentials('superadmin', 'clinic999');
-
-    // Logout
-    await dashboardPage.logout();
+    await settingsPage.updateUsername('superadmin', 'med1234');
 
     // Attempt login with old credentials
     await loginPage.login('admin', 'med1234');
     await expect(loginPage.errorMessage).toBeVisible();
 
     // Login with new credentials
-    await loginPage.login('superadmin', 'clinic999');
+    await loginPage.login('superadmin', 'med1234');
     await expect(dashboardPage.navDashboard).toBeVisible();
   });
 

@@ -42,6 +42,7 @@ class PosPage {
   async removeItem(name) {
     const row = this.cartRows.filter({ hasText: name });
     await row.locator('.btn-remove-item').click();
+    await this.page.locator('#confirm-popup-confirm').click();
   }
 
   /**

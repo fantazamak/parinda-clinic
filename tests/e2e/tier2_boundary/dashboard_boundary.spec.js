@@ -21,6 +21,7 @@ test.describe('Dashboard Boundary', () => {
   test('TC-DASH-07: Filter with empty date range inputs', async ({ page }) => {
     const dashboardPage = new DashboardPage(page);
 
+    await page.locator('[data-period="custom"]').click();
     await dashboardPage.startDateInput.fill('');
     await dashboardPage.endDateInput.fill('');
     await dashboardPage.applyFilterBtn.click();

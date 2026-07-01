@@ -321,7 +321,7 @@ html {
 }
 
 body {
-  font-family: 'Inter', 'Sarabun', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-family: 'Sarabun', 'Inter', 'Segoe UI', sans-serif;
   background-color: var(--bg-color);
   color: var(--text-color);
   display: flex;
@@ -481,8 +481,8 @@ body {
   margin-bottom: 8px;
   font-size: 13px;
   color: var(--text-secondary);
-  letter-spacing: 0.3px;
-  text-transform: uppercase;
+  letter-spacing: 0;
+  text-transform: none;
 }
 
 .form-group input,
@@ -871,17 +871,56 @@ body {
   margin-bottom: 28px;
 }
 
+.dashboard-page {
+  gap: 18px;
+}
+
+.dashboard-toolbar,
+.dashboard-filter-bar,
+.dashboard-charts-section {
+  background: var(--card-bg);
+  border: 1px solid rgba(var(--primary-rgb), 0.12);
+  box-shadow: var(--shadow-sm);
+}
+
+.dashboard-toolbar {
+  gap: 14px;
+}
+
+.dashboard-filter-bar {
+  gap: 14px;
+}
+
+.dashboard-filter-group {
+  gap: 8px;
+}
+
+.dashboard-filter-group input[type="date"] {
+  min-width: 150px;
+  border-radius: 10px;
+  background: var(--card-bg);
+}
+
+.dashboard-kpi-grid {
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  gap: 16px;
+}
+
 .stat-card {
   background: var(--card-bg);
   border: 1px solid var(--border-color);
-  border-radius: 14px;
-  padding: 22px 24px;
+  border-radius: 16px;
+  padding: 20px 22px;
   box-shadow: var(--shadow);
   display: flex;
   flex-direction: column;
   position: relative;
   overflow: hidden;
   transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.25s ease;
+}
+
+.dashboard-kpi-grid .stat-card {
+  min-height: 124px;
 }
 
 /* Gradient accent top border */
@@ -906,16 +945,129 @@ body {
   color: var(--text-secondary);
   margin-bottom: 10px;
   font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.4px;
+  text-transform: none;
+  letter-spacing: 0;
 }
 
 .stat-card .value {
-  font-size: 30px;
+  font-size: 28px;
   font-weight: 800;
   color: var(--primary-color);
   letter-spacing: -0.5px;
   line-height: 1.2;
+}
+
+.dashboard-transaction-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1.05fr) minmax(0, 1.35fr);
+  gap: 18px;
+  align-items: start;
+}
+
+.dashboard-transaction-layout .settings-card,
+.dashboard-transaction-layout .recent-visits-card {
+  border-radius: 16px;
+}
+
+.dashboard-charts-section {
+  margin-top: 0 !important;
+  padding: 18px 20px 20px;
+  border-radius: 16px;
+}
+
+.dashboard-chart-header {
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.dashboard-chart-title {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 800;
+  letter-spacing: -0.3px;
+}
+
+.dashboard-chart-caption {
+  margin: 4px 0 0;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--text-secondary);
+  max-width: 60ch;
+}
+
+.chart-toggle-group {
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.chart-toggle-btn {
+  min-width: 86px;
+  border-radius: 999px;
+  padding: 8px 14px;
+  font-size: 12px;
+  letter-spacing: 0;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease, color 0.2s ease;
+}
+
+.chart-toggle-btn.btn-primary {
+  transform: translateY(-1px);
+  box-shadow: 0 10px 20px rgba(var(--primary-rgb), 0.18);
+}
+
+.chart-toggle-btn:focus-visible {
+  outline: 2px solid var(--primary-color);
+  outline-offset: 2px;
+}
+
+.dashboard-transaction-list-card #dashboard-expense-list {
+  border-radius: 12px;
+  max-height: 330px;
+  overflow-y: auto;
+  background: var(--bg-color);
+}
+
+.dashboard-empty-state {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  align-items: center;
+  justify-content: center;
+  min-height: 160px;
+  padding: 24px;
+  text-align: center;
+  color: var(--text-secondary);
+}
+
+.dashboard-empty-state strong {
+  color: var(--text-color);
+  font-size: 15px;
+}
+
+.dashboard-summary-strip {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px 18px;
+  margin-top: 12px;
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+.dashboard-summary-strip span {
+  display: inline-flex;
+  gap: 6px;
+  align-items: center;
+}
+
+#chart-container {
+  position: relative;
+  height: 320px;
+  width: 100%;
+}
+
+#dashboard-chart {
+  width: 100%;
+  height: 100%;
+  display: block;
 }
 
 /* ============================================================
@@ -1562,7 +1714,292 @@ body *:not(.btn::after):not(#login-page::before):not(#login-page::after):not(#lo
   border-radius: 12px;
   border: 1px solid var(--border-color);
   box-shadow: var(--shadow-sm);
-  transition: all 0.3s ease;
+  transition: background-color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+/* Dashboard period picker */
+.dashboard-filter-bar {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 12px 22px;
+  align-items: center;
+  padding: 16px 18px;
+  margin-bottom: 0;
+  border-radius: 12px;
+}
+
+.dashboard-period-heading {
+  display: flex;
+  flex-direction: column;
+  min-width: 148px;
+}
+
+.dashboard-period-label {
+  color: var(--text-color);
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.dashboard-period-summary {
+  color: var(--text-secondary);
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+}
+
+.dashboard-period-options {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(76px, 1fr));
+  gap: 4px;
+  padding: 4px;
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+  background: var(--bg-color);
+}
+
+.dashboard-period-btn {
+  min-height: 38px;
+  padding: 7px 10px;
+  border: 0;
+  border-radius: 7px;
+  background: transparent;
+  color: var(--text-secondary);
+  font: 600 13px/1.2 'Sarabun', sans-serif;
+  cursor: pointer;
+  touch-action: manipulation;
+  transition: background-color 0.18s ease, color 0.18s ease, box-shadow 0.18s ease, transform 0.18s ease;
+}
+
+.dashboard-period-btn:hover {
+  color: var(--text-color);
+  background: rgba(var(--primary-rgb), 0.08);
+}
+
+.dashboard-period-btn.is-active {
+  color: #fff;
+  background: var(--primary-color);
+  box-shadow: 0 2px 8px rgba(var(--primary-rgb), 0.24);
+}
+
+.dashboard-period-btn:active {
+  transform: translateY(1px);
+}
+
+.dashboard-period-btn:focus-visible {
+  outline: 2px solid var(--primary-color);
+  outline-offset: 2px;
+}
+
+.dashboard-custom-range {
+  grid-column: 2;
+  display: flex;
+  gap: 10px;
+  align-items: end;
+  padding-top: 4px;
+}
+
+.dashboard-custom-range .dashboard-filter-group {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 4px;
+}
+
+.dashboard-custom-range label {
+  color: var(--text-secondary);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.dashboard-custom-range input[type="date"] {
+  min-width: 170px;
+  min-height: 40px;
+  padding: 7px 11px;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  background: var(--input-bg);
+  color: var(--input-text);
+  font: 500 13px 'Inter', 'Sarabun', sans-serif;
+  color-scheme: normal;
+}
+
+body[data-theme="dark"],
+body[data-theme="dark-mode"] {
+  color-scheme: dark;
+}
+
+.prescription-entry-grid {
+  display: grid;
+  grid-template-columns: minmax(220px, 1fr) 80px minmax(240px, 1.1fr) auto;
+  gap: 10px;
+  align-items: stretch;
+}
+
+.prescription-entry-grid input,
+.prescription-entry-grid select,
+.prescription-instructions-input {
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  background: var(--input-bg);
+  color: var(--input-text);
+  font: inherit;
+}
+
+.prescription-entry-grid input,
+.prescription-entry-grid select { padding: 10px 12px; }
+
+.prescription-instructions-input {
+  width: min(320px, 32vw);
+  min-width: 180px;
+  padding: 8px 10px;
+  resize: vertical;
+  line-height: 1.45;
+}
+
+.credential-form {
+  display: grid;
+  gap: 2px;
+  margin-top: 16px;
+}
+
+.credential-form h4 {
+  margin: 0 0 12px;
+  color: var(--text-color);
+  font-size: 15px;
+}
+
+.credential-form .btn { width: 100%; margin-top: 4px; }
+.credential-divider { height: 1px; margin: 24px 0; background: var(--border-color); }
+
+.detail-prescriptions {
+  display: grid;
+  gap: 8px;
+  min-height: 48px;
+  padding: 10px;
+  border: 1px solid var(--border-color);
+  border-radius: 7px;
+  background: var(--bg-color);
+}
+
+.detail-prescription-row {
+  display: grid;
+  grid-template-columns: minmax(160px, 0.8fr) minmax(220px, 1.2fr);
+  gap: 12px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--border-color);
+}
+.detail-prescription-row:last-child { padding-bottom: 0; border-bottom: 0; }
+.detail-prescription-row span { color: var(--text-secondary); white-space: pre-wrap; overflow-wrap: anywhere; }
+
+#update-modal .login-card,
+#update-notes-container {
+  background: var(--card-bg) !important;
+  color: var(--text-color) !important;
+  border: 1px solid var(--border-color);
+}
+#update-version,
+#update-progress-status { color: var(--text-secondary) !important; }
+#update-progress-container > div:last-child { background: var(--border-color) !important; }
+
+.dashboard-range-separator {
+  align-self: center;
+  margin-top: 18px;
+  color: var(--text-secondary);
+  font-size: 12px;
+}
+
+.dashboard-apply-filter-btn {
+  min-height: 40px;
+  padding: 8px 18px;
+}
+
+/* Visit treatment notes */
+.visit-care-notes {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 16px;
+  margin-top: 15px;
+}
+
+.visit-care-notes .form-group {
+  margin-bottom: 18px;
+}
+
+.visit-care-notes textarea {
+  min-height: 112px;
+  line-height: 1.65;
+}
+
+.visit-advice-field {
+  padding-left: 16px;
+  border-left: 3px solid rgba(var(--primary-rgb), 0.32);
+}
+
+.stat-card .value,
+#visit-total-price,
+.data-table td {
+  font-variant-numeric: tabular-nums;
+}
+
+@media (max-width: 1000px) {
+  .dashboard-filter-bar {
+    grid-template-columns: 1fr;
+  }
+
+  .dashboard-period-options,
+  .dashboard-custom-range {
+    grid-column: 1;
+  }
+
+  .dashboard-period-options {
+    grid-template-columns: repeat(4, minmax(90px, 1fr));
+  }
+}
+
+@media (max-width: 720px) {
+  .dashboard-period-options {
+    display: flex;
+    overflow-x: auto;
+    scroll-snap-type: x proximity;
+  }
+
+  .dashboard-period-btn {
+    min-width: 92px;
+    scroll-snap-align: start;
+  }
+
+  .dashboard-custom-range,
+  .visit-care-notes {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+
+  .dashboard-range-separator {
+    display: none;
+  }
+
+  .visit-advice-field {
+    padding-top: 16px;
+    padding-left: 0;
+    border-top: 3px solid rgba(var(--primary-rgb), 0.32);
+    border-left: 0;
+  }
+
+  .prescription-entry-grid,
+  .detail-prescription-row {
+    grid-template-columns: 1fr;
+  }
+
+  .prescription-entry-grid #presc-qty-input,
+  .prescription-instructions-input {
+    width: 100% !important;
+    min-width: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dashboard-period-btn {
+    transition: none;
+  }
 }
 
 .step-indicator {
@@ -1806,17 +2243,6 @@ body[data-theme="dark-mode"] #update-modal .login-card {
   min-width: auto;
 }
 
-#chart-container {
-  position: relative;
-  height: 280px;
-  width: 100%;
-}
-
-#dashboard-chart {
-  width: 100%;
-  height: 100%;
-}
-
 /* Theme Preview in Settings */
 .theme-preview-container {
   display: grid;
@@ -1837,7 +2263,7 @@ body[data-theme="dark-mode"] #update-modal .login-card {
   padding: 12px 8px;
   border-radius: 8px;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
   border: 2px solid transparent;
 }
 
@@ -1864,5 +2290,3 @@ body[data-theme="dark-mode"] #update-modal .login-card {
   color: var(--text-secondary);
   text-align: center;
 }
-
-

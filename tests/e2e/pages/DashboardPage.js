@@ -57,6 +57,7 @@ class DashboardPage {
    * @param {string} end 'YYYY-MM-DD'
    */
   async filterByDateRange(start, end) {
+    await this.page.locator('[data-period="custom"]').click();
     await this.startDateInput.fill(start);
     await this.endDateInput.fill(end);
     await this.applyFilterBtn.click();

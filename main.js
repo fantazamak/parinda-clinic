@@ -1,14 +1,14 @@
 const { app, BrowserWindow, ipcMain, session, dialog } = require('electron');
 const path = require('path');
 const fs = require('fs');
+const crypto = require('crypto');
 const { autoUpdater } = require('electron-updater');
-const { generatePatientVisitPdf } = require('./src/pdf');
+const { generatePatientVisitPdf, generatePatientVisitPdfBuffer } = require('./src/pdf');
 
 const dbPath = process.env.CLINIC_DB_PATH || process.env.DB_PATH || path.join(__dirname, 'data', 'db.json');
 
 const defaultSettings = {
   username: "admin",
-  password: "med1234",
   clinicName: "Parinda Clinic",
   clinicHeader: "123 Main St, Bangkok",
   clinicAddress: "123 Main St, Bangkok",
@@ -16,6 +16,29 @@ const defaultSettings = {
   defaultPractitioner: "Dr. Parinda",
   theme: "clinic-green"
 };
+const defaultPassword = 'med1234';
+
+function createPasswordRecord(password) {
+  const passwordSalt = crypto.randomBytes(16).toString('hex');
+  const passwordHash = crypto.scryptSync(password, passwordSalt, 64).toString('hex');
+  return { passwordSalt, passwordHash };
+}
+
+function verifyPassword(password, settings) {
+  if (!settings || !settings.passwordSalt || !settings.passwordHash) return false;
+  const candidate = crypto.scryptSync(password, settings.passwordSalt, 64);
+  const stored = Buffer.from(settings.passwordHash, 'hex');
+  return candidate.length === stored.length && crypto.timingSafeEqual(candidate, stored);
+}
+
+function createInitialSettings() {
+  return { ...defaultSettings, ...createPasswordRecord(defaultPassword) };
+}
+
+function publicSettings(settings) {
+  const { password, passwordHash, passwordSalt, ...safeSettings } = settings || {};
+  return safeSettings;
+}
 
 function readDb() {
   try {
@@ -51,9 +74,9 @@ function getSettings() {
   const db = readDb();
   if (!db) {
     // DB doesn't exist or is corrupted/empty, initialize with defaults
-    const initialDb = { settings: { ...defaultSettings } };
+    const initialDb = { settings: createInitialSettings() };
     writeDb(initialDb);
-    return { ...defaultSettings };
+    return initialDb.settings;
   }
   
   let settings;
@@ -70,9 +93,9 @@ function getSettings() {
     }
   } else {
     // DB exists but has no settings key, initialize settings key
-    db.settings = { ...defaultSettings };
+    db.settings = createInitialSettings();
     writeDb(db);
-    return { ...defaultSettings };
+    return db.settings;
   }
 
   // Ensure all fields from defaultSettings exist in settings
@@ -81,6 +104,13 @@ function getSettings() {
       settings[key] = defaultSettings[key];
       needWrite = true;
     }
+  }
+
+  if (!settings.passwordHash || !settings.passwordSalt) {
+    const legacyPassword = settings.password || defaultPassword;
+    Object.assign(settings, createPasswordRecord(legacyPassword));
+    delete settings.password;
+    needWrite = true;
   }
 
   // If compatibility fallback was used, we need to restructure and save
@@ -100,21 +130,94 @@ function getSettings() {
   return settings;
 }
 
-function saveSettings(newSettings) {
+function saveSettings(newSettings, options = {}) {
   let db = readDb();
   if (!db) {
     db = {};
   }
-  db.settings = newSettings;
+  const existing = getSettings();
+  db = readDb() || db;
+  const { username, password, passwordHash, passwordSalt, ...safeSettings } = newSettings || {};
+  db.settings = {
+    ...existing,
+    ...safeSettings,
+    username: options.allowUsername ? username : existing.username,
+    passwordHash: existing.passwordHash,
+    passwordSalt: existing.passwordSalt
+  };
+  delete db.settings.password;
   return writeDb(db);
 }
 
+function buildPdfPayload(visitData) {
+  const settings = getSettings();
+  const db = readDb() || {};
+  const products = db.products || [];
+  const prescriptions = (visitData.prescriptions || []).map(item => {
+    const product = products.find(entry => entry.id === item.productId);
+    const price = product ? product.price : item.price || 0;
+    const quantity = Number(item.quantity || 0);
+    return {
+      name: product ? product.name : item.productId,
+      quantity,
+      unit: product ? product.unit : 'unit',
+      price,
+      total: price * quantity,
+      instructions: String(item.instructions || '')
+    };
+  });
+
+  return {
+    settings,
+    patient: visitData.patient,
+    vitals: visitData.vitals,
+    symptoms: visitData.symptoms,
+    presentIllness: visitData.presentIllness,
+    pastHistory: visitData.pastHistory,
+    regularMedication: visitData.regularMedication,
+    pe: visitData.pe,
+    diagnosis: visitData.diagnosis,
+    prescriptions,
+    treatment: visitData.treatment,
+    advice: visitData.advice,
+    visitDate: visitData.visitDate,
+    visitTime: visitData.visitTime
+  };
+}
+
+function openPdfPreview(buffer, settings) {
+  const previewWindow = new BrowserWindow({
+    width: 980,
+    height: 860,
+    minWidth: 680,
+    minHeight: 560,
+    title: settings.lang === 'th' ? 'ตัวอย่างเอกสาร PDF' : 'PDF Preview',
+    autoHideMenuBar: true,
+    backgroundColor: settings.theme === 'dark' || settings.theme === 'dark-mode' ? '#0f172a' : '#e8eef1',
+    webPreferences: {
+      preload: path.join(__dirname, 'src', 'ui', 'pdf-preview-preload.js'),
+      contextIsolation: true,
+      nodeIntegration: false,
+      sandbox: true
+    }
+  });
+  previewWindow.setMenu(null);
+  previewWindow.loadFile(path.join(__dirname, 'src', 'ui', 'pdf-preview.html'), {
+    query: { lang: settings.lang || 'th', theme: settings.theme || 'clinic-green' }
+  });
+  previewWindow.webContents.once('did-finish-load', () => {
+    previewWindow.webContents.send('pdf-preview-data', new Uint8Array(buffer));
+  });
+}
+
 let mainWindow;
+let manualUpdateCheck = false;
 
 function createWindow() {
   mainWindow = new BrowserWindow({
     width: 1280,
     height: 800,
+    autoHideMenuBar: true,
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
       contextIsolation: true,
@@ -122,6 +225,9 @@ function createWindow() {
       sandbox: true
     }
   });
+
+  mainWindow.setMenuBarVisibility(false);
+  mainWindow.setMenu(null);
 
   const isTest = !!(process.env.CLINIC_DB_PATH || process.env.DB_PATH);
   if (isTest) {
@@ -180,12 +286,47 @@ app.whenReady().then(() => {
 
   // Register IPC handlers
   ipcMain.handle('settings-get', () => {
-    return getSettings();
+    return publicSettings(getSettings());
   });
 
   ipcMain.handle('settings-save', (event, newSettings) => {
     return saveSettings(newSettings);
   });
+
+  ipcMain.handle('auth-login', (event, credentials) => {
+    const settings = getSettings();
+    const username = String(credentials?.username || '').trim();
+    const password = String(credentials?.password || '');
+    return username === settings.username && verifyPassword(password, settings);
+  });
+
+  ipcMain.handle('auth-change-username', (event, payload) => {
+    const settings = getSettings();
+    const username = String(payload?.username || '').trim();
+    if (!username) return { success: false, error: 'USERNAME_REQUIRED' };
+    if (!verifyPassword(String(payload?.currentPassword || ''), settings)) {
+      return { success: false, error: 'INVALID_PASSWORD' };
+    }
+    return saveSettings({ ...publicSettings(settings), username }, { allowUsername: true })
+      ? { success: true }
+      : { success: false, error: 'SAVE_FAILED' };
+  });
+
+  ipcMain.handle('auth-change-password', (event, payload) => {
+    const settings = getSettings();
+    const currentPassword = String(payload?.currentPassword || '');
+    const newPassword = String(payload?.newPassword || '');
+    if (!verifyPassword(currentPassword, settings)) {
+      return { success: false, error: 'INVALID_PASSWORD' };
+    }
+    if (newPassword.length < 6) return { success: false, error: 'PASSWORD_TOO_SHORT' };
+    const db = readDb() || {};
+    db.settings = { ...settings, ...createPasswordRecord(newPassword) };
+    delete db.settings.password;
+    return writeDb(db) ? { success: true } : { success: false, error: 'SAVE_FAILED' };
+  });
+
+  ipcMain.handle('app-version', () => app.getVersion());
 
   // Stubs for database integration
   ipcMain.handle('db-read', (event, modelName, query) => {
@@ -196,6 +337,7 @@ app.whenReady().then(() => {
   });
 
   ipcMain.handle('db-write', (event, modelName, data) => {
+    if (modelName === 'settings') return false;
     console.log(`db-write for ${modelName}`, data);
     let db = readDb() || {};
     db[modelName] = data;
@@ -203,44 +345,9 @@ app.whenReady().then(() => {
   });
 
   ipcMain.handle('generate-pdf', async (event, visitData) => {
-    console.log('generate-pdf for visitData', visitData);
     try {
-      const settings = getSettings();
-      const db = readDb() || {};
-      const products = db.products || [];
-
-      // Resolve prescriptions to display names, units, prices, and totals
-      const resolvedPrescriptions = (visitData.prescriptions || []).map(p => {
-        const prod = products.find(pr => pr.id === p.productId);
-        const name = prod ? prod.name : p.productId;
-        const unit = prod ? prod.unit : 'unit';
-        const price = prod ? prod.price : p.price || 0;
-        const quantity = p.quantity || 0;
-        return {
-          name,
-          quantity,
-          unit,
-          price,
-          total: price * quantity
-        };
-      });
-
-      // Prepare payload for PDF generator
-      const pdfPayload = {
-        settings,
-        patient: visitData.patient,
-        vitals: visitData.vitals,
-        symptoms: visitData.symptoms,
-        presentIllness: visitData.presentIllness,
-        pastHistory: visitData.pastHistory,
-        regularMedication: visitData.regularMedication,
-        pe: visitData.pe,
-        diagnosis: visitData.diagnosis,
-        prescriptions: resolvedPrescriptions,
-        treatment: visitData.treatment,
-        visitDate: visitData.visitDate,
-        visitTime: visitData.visitTime
-      };
+      const pdfPayload = buildPdfPayload(visitData);
+      const settings = pdfPayload.settings;
 
       // Resolve output directory
       const outputDir = settings.outputPdfDir || path.join(__dirname, 'generated_pdfs');
@@ -261,6 +368,18 @@ app.whenReady().then(() => {
     }
   });
 
+  ipcMain.handle('preview-pdf', async (event, visitData) => {
+    try {
+      const pdfPayload = buildPdfPayload(visitData);
+      const buffer = await generatePatientVisitPdfBuffer(pdfPayload);
+      openPdfPreview(buffer, pdfPayload.settings);
+      return { success: true };
+    } catch (err) {
+      console.error('Error previewing PDF:', err);
+      return { success: false, error: err.message };
+    }
+  });
+
   ipcMain.handle('select-directory', async () => {
     const result = await dialog.showOpenDialog(mainWindow, {
       properties: ['openDirectory']
@@ -271,20 +390,6 @@ app.whenReady().then(() => {
     return result.filePaths[0];
   });
 
-  ipcMain.handle('open-pdf-preview', (event, pdfPath) => {
-    const previewWindow = new BrowserWindow({
-      width: 950,
-      height: 850,
-      title: "PDF Preview",
-      webPreferences: {
-        nodeIntegration: false,
-        contextIsolation: true
-      }
-    });
-    previewWindow.setMenu(null);
-    previewWindow.loadURL('file:///' + pdfPath.replace(/\\/g, '/'));
-  });
-
   // Auto updater config and IPC handlers
   autoUpdater.autoDownload = false;
 
@@ -292,6 +397,11 @@ app.whenReady().then(() => {
     if (mainWindow) {
       mainWindow.webContents.send('update-available', info);
     }
+  });
+
+  autoUpdater.on('update-not-available', (info) => {
+    if (mainWindow) mainWindow.webContents.send('update-not-available', { ...info, manual: manualUpdateCheck });
+    manualUpdateCheck = false;
   });
 
   autoUpdater.on('download-progress', (progressObj) => {
@@ -320,6 +430,18 @@ app.whenReady().then(() => {
   ipcMain.handle('install-update', () => {
     autoUpdater.quitAndInstall();
     return true;
+  });
+
+  ipcMain.handle('check-for-updates', async () => {
+    if (!app.isPackaged) return { success: false, development: true };
+    try {
+      manualUpdateCheck = true;
+      await autoUpdater.checkForUpdates();
+      return { success: true };
+    } catch (err) {
+      manualUpdateCheck = false;
+      return { success: false, error: err.message };
+    }
   });
 
   ipcMain.handle('simulate-update-check', () => {

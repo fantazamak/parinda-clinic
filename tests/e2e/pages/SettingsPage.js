@@ -7,8 +7,12 @@ class SettingsPage {
 
     // Authentication Settings
     this.usernameInput = page.locator('#settings-username-input');
-    this.passwordInput = page.locator('#settings-password-input');
-    this.saveAuthBtn = page.locator('#settings-save-auth-btn');
+    this.usernameCurrentPasswordInput = page.locator('#settings-username-current-password');
+    this.saveUsernameBtn = page.locator('#settings-save-username-btn');
+    this.passwordCurrentInput = page.locator('#settings-password-current');
+    this.newPasswordInput = page.locator('#settings-password-new');
+    this.confirmPasswordInput = page.locator('#settings-password-confirm');
+    this.savePasswordBtn = page.locator('#settings-save-password-btn');
     this.authSuccessMsg = page.locator('#settings-auth-success-msg');
 
     // Clinic Customization
@@ -27,10 +31,17 @@ class SettingsPage {
    * @param {string} username
    * @param {string} password
    */
-  async updateCredentials(username, password) {
+  async updateUsername(username, password) {
     await this.usernameInput.fill(username);
-    await this.passwordInput.fill(password);
-    await this.saveAuthBtn.click();
+    await this.usernameCurrentPasswordInput.fill(password);
+    await this.saveUsernameBtn.click();
+  }
+
+  async updatePassword(currentPassword, newPassword, confirmation = newPassword) {
+    await this.passwordCurrentInput.fill(currentPassword);
+    await this.newPasswordInput.fill(newPassword);
+    await this.confirmPasswordInput.fill(confirmation);
+    await this.savePasswordBtn.click();
   }
 
   /**

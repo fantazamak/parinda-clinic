@@ -66,28 +66,45 @@ test.describe('Auth Happy Path', () => {
     await expect(dashboardPage.navLogout).toBeVisible();
   });
 
-  test('TC-AUTH-05: Login updates credentials successfully', async ({ page, db }) => {
+  test('TC-AUTH-05: Username change requires password and logs out', async ({ page, db }) => {
     const loginPage = new LoginPage(page);
     const dashboardPage = new DashboardPage(page);
     const settingsPage = new SettingsPage(page);
 
     await loginPage.login('admin', 'med1234');
     await dashboardPage.goToSettings();
-    await settingsPage.updateCredentials('newadmin', 'newpass123');
+    await settingsPage.updateUsername('newadmin', 'med1234');
 
     // Assert DB state directly
     let dbState = db.read();
     expect(dbState.settings.username).toBe('newadmin');
-    expect(dbState.settings.password).toBe('newpass123');
-
-    await dashboardPage.logout();
+    expect(dbState.settings.password).toBeUndefined();
+    expect(dbState.settings.passwordHash).toBeTruthy();
 
     // Try logging in with old credentials (should fail)
     await loginPage.login('admin', 'med1234');
     await expect(loginPage.errorMessage).toBeVisible();
 
     // Log in with new credentials (should succeed)
-    await loginPage.login('newadmin', 'newpass123');
+    await loginPage.login('newadmin', 'med1234');
+    await expect(dashboardPage.navDashboard).toBeVisible();
+  });
+
+  test('TC-AUTH-06: Password change requires confirmation and logs out', async ({ page, db }) => {
+    const loginPage = new LoginPage(page);
+    const dashboardPage = new DashboardPage(page);
+    const settingsPage = new SettingsPage(page);
+
+    await loginPage.login('admin', 'med1234');
+    await dashboardPage.goToSettings();
+    await settingsPage.updatePassword('med1234', 'newpass123', 'newpass123');
+
+    const dbState = db.read();
+    expect(dbState.settings.password).toBeUndefined();
+    expect(dbState.settings.passwordHash).toBeTruthy();
+    await expect(loginPage.loginContainer).toBeVisible();
+
+    await loginPage.login('admin', 'newpass123');
     await expect(dashboardPage.navDashboard).toBeVisible();
   });
 });

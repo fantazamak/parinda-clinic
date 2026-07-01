@@ -3,6 +3,8 @@ const { LoginPage } = require('../pages/LoginPage');
 const { DashboardPage } = require('../pages/DashboardPage');
 const { PatientsPage } = require('../pages/PatientsPage');
 const { VisitFormPage } = require('../pages/VisitFormPage');
+const fs = require('fs');
+const path = require('path');
 
 test.describe('Visits Happy Path', () => {
   test.beforeEach(async ({ page }) => {
@@ -107,5 +109,56 @@ test.describe('Visits Happy Path', () => {
 
     // The export finishes and triggers IPC generate-pdf which is mocked to return { success: true }
     // No error or crash should happen.
+  });
+
+  test('TC-VIS-06: Save treatment and additional advice as separate fields', async ({ page, db }) => {
+    const visitFormPage = new VisitFormPage(page);
+
+    await visitFormPage.symptomsInput.fill('เจ็บคอ');
+    await visitFormPage.diagnosisInput.fill('คออักเสบ');
+    await visitFormPage.treatmentInput.fill('ตรวจคอและให้ยาตามอาการ');
+    await visitFormPage.adviceInput.fill('ดื่มน้ำอุ่นและพักผ่อนให้เพียงพอ');
+    await visitFormPage.submitVisit();
+
+    const savedVisit = db.read().visits.at(-1);
+    expect(savedVisit.treatment).toBe('ตรวจคอและให้ยาตามอาการ');
+    expect(savedVisit.advice).toBe('ดื่มน้ำอุ่นและพักผ่อนให้เพียงพอ');
+  });
+
+  test('TC-VIS-07: Save directions for each prescribed medication', async ({ page, db }) => {
+    const visitFormPage = new VisitFormPage(page);
+    await visitFormPage.symptomsInput.fill('มีไข้');
+    await visitFormPage.diagnosisInput.fill('ไข้หวัด');
+    await visitFormPage.addPrescriptionItem('Paracetamol 500mg', 10, 'ครั้งละ 1 เม็ด หลังอาหาร เมื่อมีไข้');
+    await visitFormPage.submitVisit();
+
+    const savedVisit = db.read().visits.at(-1);
+    expect(savedVisit.prescriptions[0].instructions).toBe('ครั้งละ 1 เม็ด หลังอาหาร เมื่อมีไข้');
+  });
+
+  test('TC-VIS-08: Preview renders without saving a permanent PDF', async ({ page, electronApp }) => {
+    const outputDir = path.join(__dirname, '../../../generated_pdfs');
+    const before = fs.existsSync(outputDir) ? fs.readdirSync(outputDir).length : 0;
+    const windowCountBefore = (await electronApp.windows()).length;
+
+    await page.locator('#visit-preview-pdf-btn').click();
+    await expect.poll(async () => (await electronApp.windows()).length).toBe(windowCountBefore + 1);
+    const preview = (await electronApp.windows()).at(-1);
+    await preview.waitForLoadState('domcontentloaded');
+    await expect(preview.locator('.pdf-page')).toHaveCount(1, { timeout: 15000 });
+    const pixels = await preview.locator('.pdf-page').evaluate(canvas => {
+      const context = canvas.getContext('2d');
+      const data = context.getImageData(0, 0, canvas.width, canvas.height).data;
+      let nonBlank = 0;
+      for (let index = 0; index < data.length; index += 16) {
+        if (data[index] < 250 || data[index + 1] < 250 || data[index + 2] < 250) nonBlank += 1;
+      }
+      return nonBlank;
+    });
+    expect(pixels).toBeGreaterThan(100);
+    await preview.close();
+
+    const after = fs.existsSync(outputDir) ? fs.readdirSync(outputDir).length : 0;
+    expect(after).toBe(before);
   });
 });

@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PDF Preview</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Sarabun:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="pdf-preview.css">
+  <script src="../../node_modules/pdfjs-dist/build/pdf.min.js" defer></script>
+  <script src="pdf-preview.js" defer></script>
+</head>
+<body>
+  <header class="preview-toolbar">
+    <div class="preview-heading">
+      <strong id="preview-title">ตัวอย่างเอกสาร</strong>
+      <span id="page-status" aria-live="polite">กำลังเตรียมเอกสาร…</span>
+    </div>
+    <div class="zoom-controls" role="group" aria-label="ปรับขนาดเอกสาร">
+      <button id="zoom-out" type="button" aria-label="ย่อเอกสาร">−</button>
+      <output id="zoom-level">100%</output>
+      <button id="zoom-in" type="button" aria-label="ขยายเอกสาร">+</button>
+      <button id="fit-width" type="button">พอดีหน้าต่าง</button>
+    </div>
+  </header>
+  <main id="preview-viewport" tabindex="0">
+    <div id="preview-message" class="preview-message" role="status">กำลังเตรียมเอกสาร…</div>
+    <div id="page-list" class="page-list" aria-label="หน้าของเอกสาร PDF"></div>
+  </main>
+</body>
+</html>

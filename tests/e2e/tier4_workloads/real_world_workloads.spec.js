@@ -155,23 +155,31 @@ test.describe('Real World Workloads', () => {
     const loginPage = new LoginPage(page);
     const dashboardPage = new DashboardPage(page);
 
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, '0');
+    const lastDay = new Date(year, now.getMonth() + 1, 0).getDate();
+    const rangeStart = `${year}-${month}-01`;
+    const rangeEnd = `${year}-${month}-${String(lastDay).padStart(2, '0')}`;
+    const nextMonthDate = new Date(year, now.getMonth() + 1, 5);
+    const nextMonth = `${nextMonthDate.getFullYear()}-${String(nextMonthDate.getMonth() + 1).padStart(2, '0')}-05`;
+
     // Directly seed transactions in DB
     db.update((current) => {
       current.transactions = [
-        { id: 'tx-june-1', type: 'income', amount: 5000, date: '2026-06-01', description: 'June income 1' },
-        { id: 'tx-june-2', type: 'income', amount: 3000, date: '2026-06-15', description: 'June income 2' },
-        { id: 'tx-june-3', type: 'expense', amount: 2000, date: '2026-06-20', description: 'June expense 1' },
-        { id: 'tx-july-1', type: 'income', amount: 4000, date: '2026-07-05', description: 'July income 1' }
+        { id: 'tx-month-1', type: 'income', amount: 5000, date: rangeStart, description: 'Monthly income 1' },
+        { id: 'tx-month-2', type: 'income', amount: 3000, date: `${year}-${month}-15`, description: 'Monthly income 2' },
+        { id: 'tx-month-3', type: 'expense', amount: 2000, date: `${year}-${month}-20`, description: 'Monthly expense 1' },
+        { id: 'tx-next-month', type: 'income', amount: 4000, date: nextMonth, description: 'Next month income' }
       ];
       current.expenses = [
-        { id: 'exp-june-1', amount: 2000, date: '2026-06-20', category: 'Medical Supplies', description: 'June expense 1' }
+        { id: 'exp-month-1', amount: 2000, date: `${year}-${month}-20`, category: 'Medical Supplies', description: 'Monthly expense 1' }
       ];
     });
 
     await loginPage.login('admin', 'med1234');
 
-    // Filter by date range for June
-    await dashboardPage.filterByDateRange('2026-06-01', '2026-06-30');
+    await dashboardPage.filterByDateRange(rangeStart, rangeEnd);
 
     // Verify KPI calculations
     let income = await dashboardPage.getIncome();
@@ -182,9 +190,7 @@ test.describe('Real World Workloads', () => {
     expect(expense).toBe(2000);
     expect(profit).toBe(6000);
 
-    // Record new expense in June via UI
-    // Ensure the date of added expense is in June (app.js should handle adding today's date, which is in June 2026)
-    await dashboardPage.addExpense(1000, 'Rent', 'June office rent');
+    await dashboardPage.addExpense(1000, 'Rent', 'Monthly office rent');
 
     // Verify updated KPIs
     income = await dashboardPage.getIncome();

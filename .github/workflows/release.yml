@@ -1,0 +1,73 @@
+name: Build and release Windows app
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: windows-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Check JavaScript syntax
+        shell: pwsh
+        run: |
+          node --check main.js
+          node --check preload.js
+          node --check src/ui/app.js
+          node --check src/ui/pdf-preview.js
+          node --check src/pdf.js
+
+      - name: Run database verification
+        run: npm run test:db
+
+      - name: Run Electron end-to-end tests
+        run: npm run test:e2e -- --reporter=line
+
+      - name: Build unsigned NSIS installer
+        run: npm run build:win
+
+      - name: Publish GitHub release
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v2
+        with:
+          name: Parinda Clinic v1.0.1
+          body: |
+            - แก้หน้าต่าง Preview PDF และไม่บันทึกไฟล์ถาวรเมื่อดูตัวอย่าง
+            - เพิ่มวิธีใช้และคำแนะนำแยกตามรายการยา
+            - แสดงปี พ.ศ. ในหน้าภาษาไทย
+            - ปรับธีม Dark Mode และหน้าจอขนาดเล็ก
+            - เพิ่มการยืนยันและเข้ารหัสรหัสผ่านผู้ดูแลระบบ
+            - รองรับการอัปเดตโปรแกรมอัตโนมัติ
+          files: |
+            dist/*.exe
+            dist/*.blockmap
+            dist/latest.yml
+          fail_on_unmatched_files: true
+
+      - name: Upload installer artifacts
+        if: ${{ !startsWith(github.ref, 'refs/tags/v') }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: parinda-clinic-windows
+          path: |
+            dist/*.exe
+            dist/*.blockmap
+            dist/latest.yml

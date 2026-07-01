@@ -17,7 +17,7 @@ test.describe('Settings Boundary', () => {
     const initialUser = db.read().settings.username;
 
     // Try to update with empty password
-    await settingsPage.updateCredentials('newadmin', '');
+    await settingsPage.updateUsername('newadmin', '');
 
     // DB username should not be updated
     const finalUser = db.read().settings.username;

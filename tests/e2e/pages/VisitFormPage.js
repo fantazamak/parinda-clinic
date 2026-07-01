@@ -20,10 +20,13 @@ class VisitFormPage {
     // Clinical Details
     this.symptomsInput = page.locator('#visit-symptoms');
     this.diagnosisInput = page.locator('#visit-diagnosis');
+    this.treatmentInput = page.locator('#visit-treatment');
+    this.adviceInput = page.locator('#visit-advice');
 
     // Prescriptions Section
     this.productSelect = page.locator('#presc-product-select');
     this.qtyInput = page.locator('#presc-qty-input');
+    this.instructionsInput = page.locator('#presc-instructions-input');
     this.addPrescBtn = page.locator('#add-presc-item-btn');
     this.prescTableBody = page.locator('#presc-table-body tr');
     this.visitTotalPriceSpan = page.locator('#visit-total-price');
@@ -58,9 +61,10 @@ class VisitFormPage {
    * @param {string} productNameOrId
    * @param {number} qty
    */
-  async addPrescriptionItem(productNameOrId, qty) {
+  async addPrescriptionItem(productNameOrId, qty, instructions = '') {
     await this.productSelect.selectOption({ label: productNameOrId });
     await this.qtyInput.fill(qty.toString());
+    await this.instructionsInput.fill(instructions);
     await this.addPrescBtn.click();
   }
 

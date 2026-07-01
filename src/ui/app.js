@@ -286,6 +286,9 @@ document.addEventListener('DOMContentLoaded', async() => {
             visit_pe_notes: "ผลการตรวจร่างกาย (Physical Exam)",
             visit_diagnosis: "การวินิจฉัยโรค (Diagnosis)",
             visit_prescribe_label: "สั่งยาและสินค้า/การทำหัตถการ",
+            presc_instructions_placeholder: "วิธีใช้ เช่น ครั้งละ 1 เม็ด หลังอาหาร…",
+            table_instructions: "วิธีใช้ / คำแนะนำ",
+            visit_prescriptions_details: "รายการยาและวิธีใช้",
             add: "เพิ่มรายการ",
             table_item: "รายการสินค้า/หัตถการ",
             table_qty: "จำนวน",
@@ -364,6 +367,14 @@ document.addEventListener('DOMContentLoaded', async() => {
             settings_username: "ชื่อบัญชีผู้ใช้ (Username)",
             settings_password: "รหัสผ่าน (Password)",
             settings_save_auth_btn: "บันทึกข้อมูลบัญชี",
+            settings_change_username: "เปลี่ยนชื่อผู้ใช้",
+            settings_new_username: "ชื่อผู้ใช้ใหม่",
+            settings_current_password: "รหัสผ่านปัจจุบัน",
+            settings_save_username: "เปลี่ยนชื่อผู้ใช้",
+            settings_change_password: "เปลี่ยนรหัสผ่าน",
+            settings_new_password: "รหัสผ่านใหม่",
+            settings_confirm_password: "ยืนยันรหัสผ่านใหม่",
+            settings_save_password: "เปลี่ยนรหัสผ่าน",
             settings_theme_title: "ตั้งค่าโทนสีหน้าจอของโปรแกรม (Theme)",
             settings_theme: "เลือกธีมที่ต้องการใช้งาน",
             settings_save_theme_btn: "บันทึกและเปิดใช้งานธีม",
@@ -379,7 +390,20 @@ document.addEventListener('DOMContentLoaded', async() => {
             exp_other: "อื่น ๆ",
             filter_start_date: "วันที่เริ่มต้น:",
             filter_end_date: "วันที่สิ้นสุด:",
-            visit_treatment_label: "การรักษา/หัตถการ/คำแนะนำ",
+            visit_treatment_label: "การรักษาและหัตถการ",
+            visit_advice_label: "คำแนะนำเพิ่มเติม",
+            dashboard_period_label: "ช่วงเวลารายงาน",
+            period_all: "ตลอดเวลา",
+            period_previous_day: "1 วันก่อน",
+            period_3_days: "3 วัน",
+            period_7_days: "7 วัน",
+            period_1_month: "1 เดือน",
+            period_1_year: "1 ปี",
+            period_custom: "กำหนดเอง",
+            period_from: "ตั้งแต่",
+            period_to: "ถึง",
+            period_until: "จนถึง",
+            period_apply: "ดูผล",
             visit_preview_pdf: "ดูตัวอย่าง PDF",
             dash_log_tx_title: "บันทึกรายรับ-รายจ่าย",
             dash_tx_type: "ประเภท",
@@ -473,6 +497,9 @@ document.addEventListener('DOMContentLoaded', async() => {
         visit_pe_notes: "Physical Examination Notes",
         visit_diagnosis: "Diagnosis",
         visit_prescribe_label: "Prescribe Medications / Services",
+        presc_instructions_placeholder: "Directions, e.g. take 1 tablet after meals…",
+        table_instructions: "Directions / Advice",
+        visit_prescriptions_details: "Medications & Directions",
         add: "Add Item",
         table_item: "Product/Service Name",
         table_qty: "Qty",
@@ -551,6 +578,14 @@ document.addEventListener('DOMContentLoaded', async() => {
         settings_username: "Username",
         settings_password: "Password",
         settings_save_auth_btn: "Save Account Info",
+        settings_change_username: "Change Username",
+        settings_new_username: "New Username",
+        settings_current_password: "Current Password",
+        settings_save_username: "Change Username",
+        settings_change_password: "Change Password",
+        settings_new_password: "New Password",
+        settings_confirm_password: "Confirm New Password",
+        settings_save_password: "Change Password",
         settings_theme_title: "Application Screen Theme Color Settings",
         settings_theme: "Select Theme to Use",
         settings_save_theme_btn: "Save and Activate Theme",
@@ -566,7 +601,20 @@ document.addEventListener('DOMContentLoaded', async() => {
         exp_other: "Other",
         filter_start_date: "Start Date:",
         filter_end_date: "End Date:",
-        visit_treatment_label: "Treatment, Procedures & Advice",
+        visit_treatment_label: "Treatment & Procedures",
+        visit_advice_label: "Additional Advice",
+        dashboard_period_label: "Report Period",
+        period_all: "All Time",
+        period_previous_day: "Previous Day",
+        period_3_days: "3 Days",
+        period_7_days: "7 Days",
+        period_1_month: "1 Month",
+        period_1_year: "1 Year",
+        period_custom: "Custom",
+        period_from: "From",
+        period_to: "to",
+        period_until: "Until",
+        period_apply: "Show Results",
         visit_preview_pdf: "Preview PDF",
         dash_log_tx_title: "Log Transaction",
         dash_tx_type: "Transaction Type",
@@ -591,7 +639,6 @@ document.addEventListener('DOMContentLoaded', async() => {
 // Application State
 let currentSettings = {
     username: "admin",
-    password: "med1234",
     clinicName: "Parinda Clinic",
     clinicHeader: "123 Main St, Bangkok",
     clinicAddress: "123 Main St, Bangkok",
@@ -624,6 +671,9 @@ const navItems = {
 
 // Router / Navigation Handler
 function navigateTo(targetId) {
+    const mainContent = document.getElementById('main-content');
+    if (mainContent) mainContent.scrollTop = 0;
+
     const tabPages = document.querySelectorAll('.tab-page');
     tabPages.forEach(page => page.classList.add('hidden'));
 
@@ -673,8 +723,7 @@ async function loadDb() {
                 currentSettings = {
                     ...currentSettings,
                     ...savedSettings,
-                    username: savedSettings.username || currentSettings.username,
-                    password: savedSettings.password || currentSettings.password
+                    username: savedSettings.username || currentSettings.username
                 };
             }
             if (isTest) {
@@ -689,7 +738,6 @@ async function loadDb() {
     } catch (err) {
         console.error('Failed to load database:', err);
         currentSettings.username = currentSettings.username || 'admin';
-        currentSettings.password = currentSettings.password || 'med1234';
     }
 }
 
@@ -749,6 +797,10 @@ function applyLanguage(lang) {
         }
     });
 
+    if (typeof syncDashboardChartLabels === 'function') {
+        syncDashboardChartLabels();
+    }
+
     // Translate dynamic headers if present
     const headerTitle = document.getElementById('header-title');
     if (headerTitle) {
@@ -788,6 +840,9 @@ function applyTheme(theme) {
     if (themeSelect) {
         themeSelect.value = fallbackTheme;
     }
+    if (typeof scheduleDashboardChartRefresh === 'function') {
+        scheduleDashboardChartRefresh();
+    }
 }
 
 // Update clinic text headers
@@ -818,12 +873,15 @@ async function persistSettings() {
 // Login handler
 const loginForm = document.getElementById('login-form');
 if (loginForm) {
-    loginForm.addEventListener('submit', (e) => {
+    loginForm.addEventListener('submit', async(e) => {
         e.preventDefault();
         const usernameVal = document.getElementById('username').value.trim();
         const passwordVal = document.getElementById('password').value;
 
-        if (usernameVal === currentSettings.username && passwordVal === currentSettings.password) {
+        const isValid = window.api?.authLogin
+            ? await window.api.authLogin({ username: usernameVal, password: passwordVal })
+            : false;
+        if (isValid) {
             isLoggedIn = true;
             sessionStorage.setItem('isLoggedIn', 'true');
             document.getElementById('login-error-msg').classList.add('hidden');
@@ -964,7 +1022,7 @@ function refreshDashboardView() {
         infoDiv.innerHTML = `
         ${typeLabel}
         <div style="font-weight:600; margin-top:2px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="${displayDesc}">${displayDesc}</div>
-        <small style="color:var(--text-secondary);">${tx.date}</small>
+                    <small style="color:var(--text-secondary);">${formatDisplayDate(tx.date)}</small>
       `;
 
         const rightDiv = document.createElement('div');
@@ -1201,13 +1259,724 @@ const originalRefreshDashboardView = refreshDashboardView; refreshDashboardView 
     setTimeout(() => refreshDashboardChart(), 50);
 };
 
+function syncDashboardChartLabels() {
+    const isTh = (currentSettings.lang || 'th') === 'th';
+    const titleEl = document.getElementById('dashboard-chart-title');
+    const captionEl = document.getElementById('dashboard-chart-caption');
+    const lineBtn = document.getElementById('chart-btn-line');
+    const barBtn = document.getElementById('chart-btn-bar');
+    const pieBtn = document.getElementById('chart-btn-pie');
+
+    if (titleEl) titleEl.textContent = isTh ? 'ภาพรวมการเงิน' : 'Financial Snapshot';
+    if (captionEl) {
+        captionEl.textContent = isTh
+            ? 'สลับมุมมองเพื่อดูแนวโน้มกำไร กระแสรายรับรายจ่าย และสถานะสต็อกในหน้าเดียว'
+            : 'Switch between trend, flow, and stock views to scan the clinic’s health at a glance.';
+    }
+    if (lineBtn) lineBtn.textContent = isTh ? 'กำไร' : 'Profit';
+    if (barBtn) barBtn.textContent = isTh ? 'รายรับ/รายจ่าย' : 'Flow';
+    if (pieBtn) pieBtn.textContent = isTh ? 'สต็อก' : 'Stock';
+}
+
+function getThemeValue(variableName, fallback) {
+    const value = getComputedStyle(document.body).getPropertyValue(variableName).trim();
+    return value || fallback;
+}
+
+function formatDashboardMoney(value) {
+    return new Intl.NumberFormat(currentSettings.lang === 'th' ? 'th-TH' : 'en-US', {
+        style: 'currency',
+        currency: 'THB',
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 2
+    }).format(Number(value || 0));
+}
+
+function formatDashboardCount(value) {
+    return new Intl.NumberFormat(currentSettings.lang === 'th' ? 'th-TH' : 'en-US', {
+        maximumFractionDigits: 0
+    }).format(Number(value || 0));
+}
+
+function formatChartValue(value) {
+    return new Intl.NumberFormat(currentSettings.lang === 'th' ? 'th-TH' : 'en-US', {
+        maximumFractionDigits: 0
+    }).format(Math.round(Number(value || 0)));
+}
+
+let dashboardChartRefreshTimer = null;
+let dashboardChartResizeObserver = null;
+
+function scheduleDashboardChartRefresh() {
+    if (dashboardChartRefreshTimer) clearTimeout(dashboardChartRefreshTimer);
+    dashboardChartRefreshTimer = setTimeout(() => {
+        dashboardChartRefreshTimer = null;
+        refreshDashboardChart();
+    }, 60);
+}
+
+function formatDashboardAxisDate(dateStr) {
+    if (!dateStr) return '';
+    const parts = dateStr.split('-');
+    if (parts.length < 3) return dateStr;
+    return currentSettings.lang === 'th' ? `${parts[2]}/${parts[1]}` : `${parts[1]}/${parts[2]}`;
+}
+
+function formatDisplayDate(dateStr, options = {}) {
+    if (!dateStr) return '-';
+    const [year, month, day] = String(dateStr).split('-').map(Number);
+    const date = year && month && day ? new Date(year, month - 1, day) : new Date(dateStr);
+    if (Number.isNaN(date.getTime())) return dateStr;
+    const locale = currentSettings.lang === 'th' ? 'th-TH-u-ca-buddhist' : 'en-GB';
+    return new Intl.DateTimeFormat(locale, {
+        day: 'numeric',
+        month: 'short',
+        year: 'numeric',
+        ...options
+    }).format(date);
+}
+
+function getDashboardRangeData() {
+    const startDateVal = document.getElementById('dashboard-start-date')?.value || '';
+    const endDateVal = document.getElementById('dashboard-end-date')?.value || '';
+    const invalidRange = !!(startDateVal && endDateVal && startDateVal > endDateVal);
+
+    const filteredTransactions = invalidRange ? [] : transactions.filter(t => {
+        if (startDateVal && t.date < startDateVal) return false;
+        if (endDateVal && t.date > endDateVal) return false;
+        return true;
+    });
+
+    const filteredVisits = invalidRange ? [] : visits.filter(v => {
+        if (startDateVal && v.date < startDateVal) return false;
+        if (endDateVal && v.date > endDateVal) return false;
+        return true;
+    });
+
+    const dates = [...new Set([
+        ...filteredTransactions.map(t => t.date).filter(Boolean),
+        ...filteredVisits.map(v => v.date).filter(Boolean)
+    ])].sort();
+
+    const buckets = dates.map(date => {
+        const dayTransactions = filteredTransactions.filter(item => item.date === date);
+        const income = dayTransactions
+            .filter(item => item.type === 'income')
+            .reduce((sum, item) => sum + Number(item.amount || 0), 0);
+        const expense = dayTransactions
+            .filter(item => item.type === 'expense')
+            .reduce((sum, item) => sum + Number(item.amount || 0), 0);
+        const visitCount = filteredVisits.filter(item => item.date === date).length;
+        return { date, income, expense, net: income - expense, visitCount };
+    });
+
+    return { invalidRange, filteredTransactions, filteredVisits, dates, buckets };
+}
+
+function prepareChartSurface(canvas) {
+    if (!canvas) return null;
+    const rect = canvas.getBoundingClientRect();
+    const dpr = window.devicePixelRatio || 1;
+    const width = Math.max(1, Math.round(rect.width));
+    const height = Math.max(1, Math.round(rect.height));
+    canvas.width = Math.max(1, Math.round(width * dpr));
+    canvas.height = Math.max(1, Math.round(height * dpr));
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return null;
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    ctx.clearRect(0, 0, width, height);
+    return { ctx, width, height };
+}
+
+function drawRoundedRect(ctx, x, y, width, height, radius) {
+    const r = Math.min(radius, width / 2, height / 2);
+    ctx.beginPath();
+    ctx.moveTo(x + r, y);
+    ctx.arcTo(x + width, y, x + width, y + height, r);
+    ctx.arcTo(x + width, y + height, x, y + height, r);
+    ctx.arcTo(x, y + height, x, y, r);
+    ctx.arcTo(x, y, x + width, y, r);
+    ctx.closePath();
+}
+
+function drawChartLegend(ctx, items, startX, startY, maxWidth) {
+    if (!items.length) return 0;
+    const swatch = 10;
+    const gap = 8;
+    const itemGap = 14;
+    const lineHeight = 18;
+    let x = startX;
+    let y = startY;
+
+    ctx.font = '12px Inter, Sarabun, sans-serif';
+    items.forEach(item => {
+        const itemWidth = swatch + gap + ctx.measureText(item.label).width + itemGap;
+        if (x !== startX && x + itemWidth > startX + maxWidth) {
+            x = startX;
+            y += lineHeight;
+        }
+        ctx.fillStyle = item.color;
+        drawRoundedRect(ctx, x, y + 4, swatch, swatch, 3);
+        ctx.fill();
+        ctx.fillStyle = getThemeValue('--text-secondary', '#64748b');
+        ctx.fillText(item.label, x + swatch + gap, y + 13);
+        x += itemWidth;
+    });
+
+    return y - startY + lineHeight;
+}
+
+function drawChartEmptyState(ctx, width, height, title, subtitle) {
+    const cardColor = getThemeValue('--card-bg', '#ffffff');
+    const borderColor = getThemeValue('--border-color', '#e2e8f0');
+    const textColor = getThemeValue('--text-color', '#1e293b');
+    const mutedColor = getThemeValue('--text-secondary', '#64748b');
+
+    ctx.fillStyle = cardColor;
+    ctx.fillRect(0, 0, width, height);
+    ctx.strokeStyle = borderColor;
+    ctx.lineWidth = 1;
+    drawRoundedRect(ctx, 16, 16, width - 32, height - 32, 16);
+    ctx.stroke();
+
+    ctx.textAlign = 'center';
+    ctx.fillStyle = textColor;
+    ctx.font = '700 16px Inter, Sarabun, sans-serif';
+    ctx.fillText(title, width / 2, height / 2 - 8);
+    ctx.fillStyle = mutedColor;
+    ctx.font = '13px Inter, Sarabun, sans-serif';
+    ctx.fillText(subtitle, width / 2, height / 2 + 16);
+    ctx.textAlign = 'left';
+}
+
+function renderLineChart(ctx, width, height, labels, data, legendItems, emptyTitle, emptySubtitle) {
+    if (!labels.length || !data.length) {
+        drawChartEmptyState(ctx, width, height, emptyTitle, emptySubtitle);
+        return;
+    }
+
+    const padding = { top: 22, right: 20, bottom: 42, left: 56 };
+    const chartWidth = width - padding.left - padding.right;
+    const chartHeight = height - padding.top - padding.bottom;
+    const primaryColor = getThemeValue('--primary-color', '#10b981');
+    const gridColor = getThemeValue('--border-color', '#e2e8f0');
+    const textColor = getThemeValue('--text-secondary', '#64748b');
+    const cardColor = getThemeValue('--card-bg', '#ffffff');
+    const minVal = Math.min(0, ...data);
+    const maxVal = Math.max(0, ...data);
+    const spread = (maxVal - minVal) || 1;
+
+    ctx.fillStyle = cardColor;
+    ctx.fillRect(0, 0, width, height);
+
+    ctx.strokeStyle = gridColor;
+    ctx.lineWidth = 1;
+    for (let i = 0; i <= 4; i++) {
+        const y = padding.top + (chartHeight / 4) * i;
+        ctx.beginPath();
+        ctx.moveTo(padding.left, y);
+        ctx.lineTo(width - padding.right, y);
+        ctx.stroke();
+    }
+
+    ctx.fillStyle = textColor;
+    ctx.font = '12px Inter, Sarabun, sans-serif';
+    ctx.textAlign = 'right';
+    for (let i = 0; i <= 4; i++) {
+        const value = maxVal - ((maxVal - minVal) / 4) * i;
+        const y = padding.top + (chartHeight / 4) * i + 4;
+        ctx.fillText(formatChartValue(value), padding.left - 10, y);
+    }
+
+    const points = data.map((value, index) => ({
+        x: padding.left + (labels.length === 1 ? chartWidth / 2 : (chartWidth / Math.max(labels.length - 1, 1)) * index),
+        y: padding.top + ((maxVal - value) / spread) * chartHeight,
+        value
+    }));
+
+    ctx.strokeStyle = primaryColor;
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    points.forEach((point, index) => {
+        if (index === 0) ctx.moveTo(point.x, point.y);
+        else ctx.lineTo(point.x, point.y);
+    });
+    ctx.stroke();
+
+    ctx.fillStyle = primaryColor;
+    points.forEach(point => {
+        ctx.beginPath();
+        ctx.arc(point.x, point.y, 4, 0, Math.PI * 2);
+        ctx.fill();
+    });
+
+    ctx.fillStyle = getThemeValue('--text-secondary', '#64748b');
+    ctx.textAlign = 'center';
+    ctx.font = '12px Inter, Sarabun, sans-serif';
+    points.forEach((point, index) => {
+        if (labels.length <= 8 || index === 0 || index === labels.length - 1 || index % 2 === 0) {
+            ctx.fillText(labels[index], point.x, height - 16);
+            ctx.fillStyle = primaryColor;
+            ctx.font = '11px Inter, Sarabun, sans-serif';
+            ctx.fillText(formatChartValue(point.value), point.x, point.y - 10);
+            ctx.fillStyle = getThemeValue('--text-secondary', '#64748b');
+            ctx.font = '12px Inter, Sarabun, sans-serif';
+        }
+    });
+
+    drawChartLegend(ctx, legendItems, Math.max(padding.left, width - padding.right - 220), padding.top - 2, 220);
+}
+
+function renderGroupedBarChart(ctx, width, height, labels, series, legendItems, emptyTitle, emptySubtitle) {
+    const hasData = labels.length && series.some(item => item.data.some(value => value > 0));
+    if (!hasData) {
+        drawChartEmptyState(ctx, width, height, emptyTitle, emptySubtitle);
+        return;
+    }
+
+    const padding = { top: 22, right: 20, bottom: 42, left: 56 };
+    const chartWidth = width - padding.left - padding.right;
+    const chartHeight = height - padding.top - padding.bottom;
+    const gridColor = getThemeValue('--border-color', '#e2e8f0');
+    const textColor = getThemeValue('--text-secondary', '#64748b');
+    const cardColor = getThemeValue('--card-bg', '#ffffff');
+    const maxVal = Math.max(1, ...series.flatMap(item => item.data));
+    const groupWidth = chartWidth / Math.max(labels.length, 1);
+    const innerWidth = Math.max(20, groupWidth * 0.72);
+    const barWidth = Math.max(10, (innerWidth - 8 * (series.length - 1)) / series.length);
+
+    ctx.fillStyle = cardColor;
+    ctx.fillRect(0, 0, width, height);
+
+    ctx.strokeStyle = gridColor;
+    ctx.lineWidth = 1;
+    for (let i = 0; i <= 4; i++) {
+        const y = padding.top + (chartHeight / 4) * i;
+        ctx.beginPath();
+        ctx.moveTo(padding.left, y);
+        ctx.lineTo(width - padding.right, y);
+        ctx.stroke();
+    }
+
+    ctx.fillStyle = textColor;
+    ctx.font = '12px Inter, Sarabun, sans-serif';
+    ctx.textAlign = 'right';
+    for (let i = 0; i <= 4; i++) {
+        const value = maxVal - (maxVal / 4) * i;
+        const y = padding.top + (chartHeight / 4) * i + 4;
+        ctx.fillText(formatChartValue(value), padding.left - 10, y);
+    }
+
+    labels.forEach((label, labelIndex) => {
+        const groupX = padding.left + groupWidth * labelIndex;
+        const barsStart = groupX + (groupWidth - innerWidth) / 2;
+
+        series.forEach((item, seriesIndex) => {
+            const value = Number(item.data[labelIndex] || 0);
+            const barHeight = (value / maxVal) * chartHeight;
+            const x = barsStart + seriesIndex * (barWidth + 8);
+            const y = padding.top + chartHeight - barHeight;
+
+            ctx.fillStyle = item.color;
+            drawRoundedRect(ctx, x, y, barWidth, Math.max(2, barHeight), 8);
+            ctx.fill();
+
+            if (barHeight > 18) {
+                ctx.fillStyle = item.color;
+                ctx.font = '11px Inter, Sarabun, sans-serif';
+                ctx.textAlign = 'center';
+                ctx.fillText(formatChartValue(value), x + barWidth / 2, y - 6);
+            }
+        });
+
+        ctx.fillStyle = textColor;
+        ctx.font = '12px Inter, Sarabun, sans-serif';
+        ctx.fillText(label, groupX + groupWidth / 2, height - 16);
+    });
+
+    drawChartLegend(ctx, legendItems, padding.left, padding.top - 2, width - padding.left - padding.right - 12);
+}
+
+function renderPieChart(ctx, width, height, labels, data, colors, legendItems, emptyTitle, emptySubtitle) {
+    const total = data.reduce((sum, value) => sum + Number(value || 0), 0);
+    if (!total) {
+        drawChartEmptyState(ctx, width, height, emptyTitle, emptySubtitle);
+        return;
+    }
+
+    const cardColor = getThemeValue('--card-bg', '#ffffff');
+    const textColor = getThemeValue('--text-color', '#1e293b');
+    const mutedColor = getThemeValue('--text-secondary', '#64748b');
+    const radius = Math.min(width, height) * 0.23;
+    const centerX = Math.max(radius + 40, width * 0.32);
+    const centerY = height * 0.54;
+
+    ctx.fillStyle = cardColor;
+    ctx.fillRect(0, 0, width, height);
+
+    let startAngle = -Math.PI / 2;
+    data.forEach((value, index) => {
+        const angle = (Number(value || 0) / total) * Math.PI * 2;
+        const endAngle = startAngle + angle;
+        ctx.beginPath();
+        ctx.moveTo(centerX, centerY);
+        ctx.arc(centerX, centerY, radius, startAngle, endAngle);
+        ctx.closePath();
+        ctx.fillStyle = colors[index % colors.length];
+        ctx.fill();
+
+        if (angle > 0.35) {
+            const midAngle = startAngle + angle / 2;
+            const labelX = centerX + Math.cos(midAngle) * (radius * 0.68);
+            const labelY = centerY + Math.sin(midAngle) * (radius * 0.68);
+            ctx.fillStyle = '#ffffff';
+            ctx.font = '700 11px Inter, Sarabun, sans-serif';
+            ctx.textAlign = 'center';
+            ctx.fillText(`${Math.round((Number(value || 0) / total) * 100)}%`, labelX, labelY + 4);
+        }
+
+        startAngle = endAngle;
+    });
+
+    ctx.fillStyle = textColor;
+    ctx.textAlign = 'center';
+    ctx.font = '800 18px Inter, Sarabun, sans-serif';
+    ctx.fillText(formatDashboardCount(total), centerX, centerY - 4);
+    ctx.font = '12px Inter, Sarabun, sans-serif';
+    ctx.fillStyle = mutedColor;
+    ctx.fillText(currentSettings.lang === 'th' ? 'รายการ' : 'items', centerX, centerY + 14);
+
+    const legendStartX = width < 720 ? 24 : centerX + radius + 24;
+    const legendStartY = width < 720 ? height * 0.74 : height * 0.34;
+    const legendWidth = width < 720 ? width - 48 : width - centerX - radius - 40;
+    drawChartLegend(ctx, legendItems, legendStartX, legendStartY, legendWidth);
+}
+
+refreshDashboardChart = function() {
+    const canvas = document.getElementById('dashboard-chart');
+    const surface = prepareChartSurface(canvas);
+    if (!surface) return;
+
+    const { ctx, width, height } = surface;
+    const rangeData = getDashboardRangeData();
+    const isTh = (currentSettings.lang || 'th') === 'th';
+    const emptyChartTitle = isTh ? 'ยังไม่มีข้อมูลสำหรับมุมมองนี้' : 'No data for this view';
+    const emptyChartSubtitle = isTh ? 'ลองเปลี่ยนช่วงวันที่ หรือเลือกมุมมองอื่น' : 'Try a different date range or switch chart mode.';
+
+    if (currentChartType === 'line') {
+        const cumulativeSeries = rangeData.buckets.reduce((series, bucket) => {
+            const previous = series.length ? series[series.length - 1] : 0;
+            series.push(previous + bucket.net);
+            return series;
+        }, []);
+        renderLineChart(
+            ctx,
+            width,
+            height,
+            rangeData.dates.map(formatDashboardAxisDate),
+            cumulativeSeries,
+            [{ label: isTh ? 'กำไรสุทธิสะสม' : 'Cumulative profit', color: getThemeValue('--primary-color', '#10b981') }],
+            emptyChartTitle,
+            emptyChartSubtitle
+        );
+    } else if (currentChartType === 'bar') {
+        renderGroupedBarChart(
+            ctx,
+            width,
+            height,
+            rangeData.dates.map(formatDashboardAxisDate),
+            [
+                { label: isTh ? 'รายรับ' : 'Income', color: '#22c55e', data: rangeData.buckets.map(bucket => bucket.income) },
+                { label: isTh ? 'รายจ่าย' : 'Expense', color: '#ef4444', data: rangeData.buckets.map(bucket => bucket.expense) }
+            ],
+            [
+                { label: isTh ? 'รายรับ' : 'Income', color: '#22c55e' },
+                { label: isTh ? 'รายจ่าย' : 'Expense', color: '#ef4444' }
+            ],
+            emptyChartTitle,
+            emptyChartSubtitle
+        );
+    } else if (currentChartType === 'pie') {
+        const lowStock = products.filter(p => p.stock <= p.minStockAlert).length;
+        const normalStock = products.length - lowStock;
+        renderPieChart(
+            ctx,
+            width,
+            height,
+            [isTh ? 'ปกติ' : 'Normal', isTh ? 'ต่ำ' : 'Low'],
+            [normalStock, lowStock],
+            ['#22c55e', '#f59e0b'],
+            [
+                { label: isTh ? 'สต็อกปกติ' : 'Normal stock', color: '#22c55e' },
+                { label: isTh ? 'ต่ำกว่าระดับเตือน' : 'Below alert level', color: '#f59e0b' }
+            ],
+            isTh ? 'ยังไม่มีสินค้าในระบบ' : 'No products in inventory',
+            isTh ? 'เพิ่มสินค้าเพื่อดูภาพรวมสต็อก' : 'Add products to see stock distribution.'
+        );
+    }
+};
+
+refreshDashboardView = function() {
+    syncDashboardChartLabels();
+
+    const isTh = (currentSettings.lang || 'th') === 'th';
+    const totalPatientsEl = document.getElementById('dash-total-patients');
+    const todayVisitsEl = document.getElementById('dash-today-visits');
+    const lowStockEl = document.getElementById('dash-low-stock');
+    const progressContainer = document.getElementById('dash-stock-progress-container');
+    const progressBar = document.getElementById('dash-stock-progress-bar');
+    const expenseListEl = document.getElementById('dashboard-expense-list');
+    const incomeEl = document.getElementById('dashboard-kpi-income');
+    const expenseEl = document.getElementById('dashboard-kpi-expense');
+    const profitEl = document.getElementById('dashboard-kpi-profit');
+
+    if (totalPatientsEl) totalPatientsEl.textContent = formatDashboardCount(patients.length);
+
+    const todayStr = new Date().toISOString().split('T')[0];
+    const todayVisitsCount = visits.filter(v => v.date === todayStr).length;
+    if (todayVisitsEl) todayVisitsEl.textContent = formatDashboardCount(todayVisitsCount);
+
+    const lowStockCount = products.filter(p => p.stock <= p.minStockAlert).length;
+    if (lowStockEl) lowStockEl.textContent = formatDashboardCount(lowStockCount);
+
+    if (progressContainer && progressBar) {
+        if (lowStockCount > 0) {
+            progressContainer.classList.remove('hidden');
+            const percent = Math.min(100, Math.round((lowStockCount / (products.length || 1)) * 100));
+            progressBar.style.width = `${percent}%`;
+        } else {
+            progressContainer.classList.add('hidden');
+            progressBar.style.width = '0%';
+        }
+    }
+
+    const { filteredTransactions } = getDashboardRangeData();
+    let income = 0;
+    let expense = 0;
+    filteredTransactions.forEach(t => {
+        if (t.type === 'income') income += Number(t.amount);
+        else if (t.type === 'expense') expense += Number(t.amount);
+    });
+    const profit = income - expense;
+
+    if (incomeEl) {
+        incomeEl.textContent = String(Math.round(income));
+        incomeEl.title = formatDashboardMoney(income);
+    }
+    if (expenseEl) {
+        expenseEl.textContent = String(Math.round(expense));
+        expenseEl.title = formatDashboardMoney(expense);
+    }
+    if (profitEl) {
+        profitEl.textContent = String(Math.round(profit));
+        profitEl.title = formatDashboardMoney(profit);
+    }
+
+    if (expenseListEl) {
+        expenseListEl.innerHTML = '';
+        const sortedTxs = [...filteredTransactions].reverse();
+        if (!sortedTxs.length) {
+            expenseListEl.innerHTML = `
+                <div class="dashboard-empty-state">
+                  <strong>${isTh ? 'ยังไม่มีรายการในช่วงนี้' : 'No transactions in range'}</strong>
+                  <span>${isTh ? 'ลองเปลี่ยนช่วงวันที่เพื่อดูข้อมูล' : 'Try a different date range to see activity.'}</span>
+                </div>
+            `;
+        } else {
+            sortedTxs.forEach((tx, reversedIdx) => {
+                if (Number(tx.amount) === 0) return;
+
+                let displayDesc = tx.description || (isTh ? 'ธุรกรรม' : 'Transaction');
+                if (displayDesc.startsWith('Payment for visit-')) {
+                    const nameHnMatch = displayDesc.match(/\((.+?)\s*-\s*(HN\w+)\)/);
+                    if (nameHnMatch) {
+                        displayDesc = isTh
+                            ? `ค่ารักษาพยาบาล — ${nameHnMatch[1]} ${nameHnMatch[2]}`
+                            : `Medical fee — ${nameHnMatch[1]} ${nameHnMatch[2]}`;
+                    } else {
+                        displayDesc = isTh ? 'ค่ารักษาพยาบาล' : 'Medical fee';
+                    }
+                } else if (displayDesc === 'Counter Sale') {
+                    displayDesc = isTh ? 'ขายหน้าร้าน (POS)' : 'Counter Sale (POS)';
+                }
+
+                const realIdx = filteredTransactions.length - 1 - reversedIdx;
+                const typeLabel = tx.type === 'income'
+                    ? `<span class="tx-badge tx-badge-income">${isTh ? 'รายรับ' : 'Income'}</span>`
+                    : `<span class="tx-badge tx-badge-expense">${isTh ? 'รายจ่าย' : 'Expense'}</span>`;
+
+                const div = document.createElement('div');
+                div.style.padding = '10px 12px';
+                div.style.borderBottom = '1px solid var(--border-color)';
+                div.style.display = 'flex';
+                div.style.justifyContent = 'space-between';
+                div.style.alignItems = 'center';
+                div.style.gap = '8px';
+
+                const infoDiv = document.createElement('div');
+                infoDiv.style.flex = '1';
+                infoDiv.style.minWidth = '0';
+                infoDiv.innerHTML = `
+                    ${typeLabel}
+                    <div style="font-weight:600; margin-top:2px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="${displayDesc}">${displayDesc}</div>
+        <small style="color:var(--text-secondary);">${formatDisplayDate(tx.date)}</small>
+                `;
+
+                const rightDiv = document.createElement('div');
+                rightDiv.style.display = 'flex';
+                rightDiv.style.alignItems = 'center';
+                rightDiv.style.gap = '10px';
+                rightDiv.style.flexShrink = '0';
+
+                const amountSpan = document.createElement('span');
+                amountSpan.style.fontWeight = 'bold';
+                amountSpan.style.fontSize = '14px';
+                amountSpan.style.color = tx.type === 'income' ? 'var(--success-color)' : 'var(--error-color)';
+                amountSpan.textContent = formatDashboardMoney(tx.amount);
+
+                const deleteBtn = document.createElement('button');
+                deleteBtn.className = 'btn btn-danger';
+                deleteBtn.style.padding = '3px 8px';
+                deleteBtn.style.fontSize = '11px';
+                deleteBtn.style.opacity = '0.7';
+                deleteBtn.textContent = isTh ? 'ลบ' : 'Del';
+                deleteBtn.title = isTh ? 'ลบรายการนี้' : 'Delete this entry';
+                deleteBtn.addEventListener('click', async() => {
+                    const confirmMsg = isTh ? 'ต้องการลบรายการนี้ใช่ไหม?' : 'Delete this transaction?';
+                    showConfirmPopup(confirmMsg, (confirmed) => {
+                        if (confirmed) {
+                            filteredTransactions.splice(realIdx, 1);
+                            transactions = transactions.filter(item => item.id !== tx.id);
+                            if (window.api) window.api.dbWrite('transactions', transactions);
+                            refreshDashboardView();
+                        }
+                    });
+                });
+
+                rightDiv.appendChild(amountSpan);
+                rightDiv.appendChild(deleteBtn);
+                div.appendChild(infoDiv);
+                div.appendChild(rightDiv);
+                expenseListEl.appendChild(div);
+            });
+        }
+    }
+
+    scheduleDashboardChartRefresh();
+};
+
+const dashboardChartContainer = document.getElementById('chart-container');
+if (dashboardChartContainer && 'ResizeObserver' in window) {
+    dashboardChartResizeObserver = new ResizeObserver(() => scheduleDashboardChartRefresh());
+    dashboardChartResizeObserver.observe(dashboardChartContainer);
+}
+
+window.addEventListener('resize', scheduleDashboardChartRefresh);
+
+function syncChartToggleButtons() {
+    document.querySelectorAll('.chart-toggle-btn').forEach(btn => {
+        const isActive = btn.id === `chart-btn-${currentChartType}`;
+        btn.classList.toggle('btn-primary', isActive);
+        btn.classList.toggle('btn-secondary', !isActive);
+        btn.setAttribute('aria-pressed', isActive ? 'true' : 'false');
+    });
+}
+
+syncChartToggleButtons();
+syncDashboardChartLabels();
+scheduleDashboardChartRefresh();
+
 // Dashboard filter apply
 const applyFilterBtn = document.getElementById('dashboard-apply-filter-btn');
 if (applyFilterBtn) {
     applyFilterBtn.addEventListener('click', () => {
+        const start = document.getElementById('dashboard-start-date')?.value || '';
+        const end = document.getElementById('dashboard-end-date')?.value || '';
+        const summary = document.getElementById('dashboard-period-summary');
+        if (summary) {
+            summary.textContent = start || end
+                ? `${start ? formatDashboardPeriodDate(start) : '…'} - ${end ? formatDashboardPeriodDate(end) : '…'}`
+                : (currentSettings.lang === 'th' ? 'ข้อมูลทั้งหมด' : 'All records');
+        }
         refreshDashboardView();
     });
 }
+
+function toLocalDateInputValue(date) {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+}
+
+function formatDashboardPeriodDate(value) {
+    if (!value) return '';
+    const [year, month, day] = value.split('-').map(Number);
+    return new Intl.DateTimeFormat(currentSettings.lang === 'th' ? 'th-TH' : 'en-GB', {
+        day: 'numeric',
+        month: 'short',
+        year: 'numeric'
+    }).format(new Date(year, month - 1, day));
+}
+
+function setDashboardPeriod(period) {
+    const startInput = document.getElementById('dashboard-start-date');
+    const endInput = document.getElementById('dashboard-end-date');
+    const customRange = document.getElementById('dashboard-custom-range');
+    const summary = document.getElementById('dashboard-period-summary');
+    if (!startInput || !endInput || !customRange) return;
+
+    document.querySelectorAll('.dashboard-period-btn').forEach(button => {
+        const isActive = button.dataset.period === period;
+        button.classList.toggle('is-active', isActive);
+        button.setAttribute('aria-pressed', isActive ? 'true' : 'false');
+    });
+
+    if (period === 'custom') {
+        customRange.classList.remove('hidden');
+        if (summary) summary.textContent = currentSettings.lang === 'th' ? 'เลือกวันเริ่มต้นและวันสิ้นสุด' : 'Choose start and end dates';
+        startInput.focus();
+        return;
+    }
+
+    customRange.classList.add('hidden');
+    const today = new Date();
+    const end = toLocalDateInputValue(today);
+    let start = '';
+
+    if (period === '1d') {
+        const date = new Date(today);
+        date.setDate(date.getDate() - 1);
+        start = toLocalDateInputValue(date);
+    } else if (period === '3d' || period === '7d') {
+        const date = new Date(today);
+        date.setDate(date.getDate() - (Number(period.replace('d', '')) - 1));
+        start = toLocalDateInputValue(date);
+    } else if (period === '1m') {
+        const date = new Date(today);
+        date.setMonth(date.getMonth() - 1);
+        start = toLocalDateInputValue(date);
+    } else if (period === '1y') {
+        const date = new Date(today);
+        date.setFullYear(date.getFullYear() - 1);
+        start = toLocalDateInputValue(date);
+    }
+
+    startInput.value = start;
+    endInput.value = period === 'all' ? '' : end;
+    if (summary) {
+        summary.textContent = period === 'all'
+            ? (currentSettings.lang === 'th' ? 'ข้อมูลทั้งหมด' : 'All records')
+            : `${formatDashboardPeriodDate(start)} - ${formatDashboardPeriodDate(end)}`;
+    }
+    refreshDashboardView();
+}
+
+document.querySelectorAll('.dashboard-period-btn').forEach(button => {
+    button.addEventListener('click', () => setDashboardPeriod(button.dataset.period));
+});
+
+setDashboardPeriod('all');
 
 // Dashboard log transaction submit
 const expenseForm = document.getElementById('expense-form');
@@ -1759,7 +2528,9 @@ if (visitPatientSelector) {
                 document.getElementById('visit-pe').value = '';
                 document.getElementById('visit-diagnosis').value = '';
                 document.getElementById('visit-treatment').value = '';
+                document.getElementById('visit-advice').value = '';
                 document.getElementById('presc-qty-input').value = '1';
+                document.getElementById('presc-instructions-input').value = '';
                 setVisitStep(1);
                 refreshVisitFormView();
             }
@@ -1786,7 +2557,9 @@ function startVisitForPatient(patient) {
     document.getElementById('visit-pe').value = '';
     document.getElementById('visit-diagnosis').value = '';
     document.getElementById('visit-treatment').value = '';
+    document.getElementById('visit-advice').value = '';
     document.getElementById('presc-qty-input').value = '1';
+    document.getElementById('presc-instructions-input').value = '';
 
     const selector = document.getElementById('visit-patient-selector');
     if (selector) selector.value = patient.hn;
@@ -1860,6 +2633,19 @@ function refreshPrescriptionTable() {
         tdSubtotal.textContent = `฿${subtotal.toFixed(2)}`;
         tr.appendChild(tdSubtotal);
 
+        const tdInstructions = document.createElement('td');
+        const instructionsInput = document.createElement('textarea');
+        instructionsInput.className = 'prescription-instructions-input';
+        instructionsInput.rows = 2;
+        instructionsInput.value = item.instructions || '';
+        instructionsInput.placeholder = isTh ? 'ระบุวิธีใช้หรือคำแนะนำ' : 'Enter directions or advice';
+        instructionsInput.setAttribute('aria-label', `${isTh ? 'วิธีใช้' : 'Directions'} ${product.name}`);
+        instructionsInput.addEventListener('input', event => {
+            item.instructions = event.target.value;
+        });
+        tdInstructions.appendChild(instructionsInput);
+        tr.appendChild(tdInstructions);
+
         const tdAction = document.createElement('td');
         const btnRemove = document.createElement('button');
         btnRemove.className = 'btn btn-danger';
@@ -1889,15 +2675,18 @@ if (addPrescItemBtn) {
     addPrescItemBtn.addEventListener('click', () => {
         const productId = document.getElementById('presc-product-select').value;
         const quantity = parseInt(document.getElementById('presc-qty-input').value, 10);
+        const instructions = document.getElementById('presc-instructions-input').value.trim();
         if (!productId || isNaN(quantity) || quantity <= 0) return;
 
         const existing = activeVisitPrescriptions.find(item => item.productId === productId);
         if (existing) {
             existing.quantity += quantity;
+            if (instructions) existing.instructions = instructions;
         } else {
-            activeVisitPrescriptions.push({ productId, quantity });
+            activeVisitPrescriptions.push({ productId, quantity, instructions });
         }
 
+        document.getElementById('presc-instructions-input').value = '';
         refreshPrescriptionTable();
     });
 }
@@ -1927,6 +2716,7 @@ if (saveVisitBtn) {
         const pe = document.getElementById('visit-pe').value.trim();
         const diagnosis = document.getElementById('visit-diagnosis').value.trim();
         const treatment = document.getElementById('visit-treatment').value.trim();
+        const advice = document.getElementById('visit-advice').value.trim();
 
         if (weight < 0 || height < 0 || temp < 0 || hr < 0 || rr < 0) {
             alert(lang === 'th' ? 'ข้อมูลสัญญาณชีพต้องไม่ติดลบ' : 'Vitals cannot be negative.');
@@ -1972,12 +2762,14 @@ if (saveVisitBtn) {
             pe,
             diagnosis,
             treatment,
+            advice,
             prescriptions: activeVisitPrescriptions.map(item => {
                 const prod = products.find(p => p.id === item.productId);
                 return {
                     productId: item.productId,
                     quantity: item.quantity,
-                    price: prod ? prod.price : 0
+                    price: prod ? prod.price : 0,
+                    instructions: item.instructions || ''
                 };
             }),
             totalPrice,
@@ -2042,7 +2834,7 @@ if (visitPreviewPdfBtn) {
             alert(lang === 'th' ? 'กรุณาเลือกคนไข้ก่อนดูตัวอย่าง PDF' : 'Please select a patient before previewing PDF.');
             return;
         }
-        if (window.api && typeof window.api.generatePdf === 'function') {
+        if (window.api && typeof window.api.previewPdf === 'function') {
             const bp = document.getElementById('vitals-bp').value;
             const hr = parseInt(document.getElementById('vitals-hr').value, 10) || 0;
             const rr = parseInt(document.getElementById('vitals-rr').value, 10) || 0;
@@ -2058,8 +2850,9 @@ if (visitPreviewPdfBtn) {
             const pe = document.getElementById('visit-pe').value.trim();
             const diagnosis = document.getElementById('visit-diagnosis').value.trim();
             const treatment = document.getElementById('visit-treatment').value.trim();
+            const advice = document.getElementById('visit-advice').value.trim();
 
-            const res = await window.api.generatePdf({
+            const res = await window.api.previewPdf({
                 patient: activePatient,
                 vitals: { bp, hr, rr, temp, weight, height, bmi },
                 symptoms,
@@ -2069,16 +2862,11 @@ if (visitPreviewPdfBtn) {
                 pe,
                 diagnosis,
                 treatment,
+                advice,
                 prescriptions: activeVisitPrescriptions
             });
 
-            if (res && res.success) {
-                if (window.api.openPdfPreview) {
-                    window.api.openPdfPreview(res.filePath);
-                } else {
-                    alert(lang === 'th' ? `สร้างไฟล์สำเร็จแล้วที่: ${res.filePath}` : `PDF created at: ${res.filePath}`);
-                }
-            } else {
+            if (!res?.success) {
                 alert(lang === 'th' ? `เกิดข้อผิดพลาด: ${res.error || 'ไม่รู้จัก'}` : `Error: ${res.error || 'unknown'}`);
             }
         }
@@ -2110,6 +2898,7 @@ if (visitPrintPdfBtn) {
             const pe = document.getElementById('visit-pe').value.trim();
             const diagnosis = document.getElementById('visit-diagnosis').value.trim();
             const treatment = document.getElementById('visit-treatment').value.trim();
+            const advice = document.getElementById('visit-advice').value.trim();
 
             const res = await window.api.generatePdf({
                 patient: activePatient,
@@ -2121,6 +2910,7 @@ if (visitPrintPdfBtn) {
                 pe,
                 diagnosis,
                 treatment,
+                advice,
                 prescriptions: activeVisitPrescriptions
             });
 
@@ -2856,7 +3646,6 @@ if (posCheckoutBtnEl) {
 // --- Settings Logic ---
 function refreshSettingsView() {
     document.getElementById('settings-username-input').value = currentSettings.username || '';
-    document.getElementById('settings-password-input').value = currentSettings.password || '';
     document.getElementById('settings-clinic-name-input').value = currentSettings.clinicName || '';
     document.getElementById('settings-clinic-header-input').value = currentSettings.clinicHeader || '';
     document.getElementById('settings-clinic-id-input').value = currentSettings.clinicId || '';
@@ -2880,28 +3669,61 @@ function refreshSettingsView() {
     }, 100);
 }
 
-// Credentials Update
-const settingsSaveAuthBtn = document.getElementById('settings-save-auth-btn');
-if (settingsSaveAuthBtn) {
-    settingsSaveAuthBtn.addEventListener('click', async() => {
-        const username = document.getElementById('settings-username-input').value.trim();
-        const password = document.getElementById('settings-password-input').value;
-        const lang = currentSettings.lang || 'th';
+function logoutAfterCredentialChange() {
+    isLoggedIn = false;
+    sessionStorage.removeItem('isLoggedIn');
+    document.getElementById('username').value = '';
+    document.getElementById('password').value = '';
+    document.getElementById('app-shell').classList.add('hidden');
+    document.getElementById('login-container').classList.remove('hidden');
+    document.getElementById('username').focus();
+}
 
-        if (!username || !password) {
-            alert(lang === 'th' ? 'กรุณากรอกชื่อผู้ใช้และรหัสผ่าน' : 'Please enter username and password.');
+function credentialErrorMessage(code, lang) {
+    const messages = {
+        INVALID_PASSWORD: lang === 'th' ? 'รหัสผ่านปัจจุบันไม่ถูกต้อง' : 'The current password is incorrect.',
+        PASSWORD_TOO_SHORT: lang === 'th' ? 'รหัสผ่านใหม่ต้องมีอย่างน้อย 6 ตัวอักษร' : 'The new password must contain at least 6 characters.',
+        USERNAME_REQUIRED: lang === 'th' ? 'กรุณากรอกชื่อผู้ใช้ใหม่' : 'Enter a new username.',
+        SAVE_FAILED: lang === 'th' ? 'บันทึกข้อมูลบัญชีไม่ได้ กรุณาลองอีกครั้ง' : 'The account could not be saved. Try again.'
+    };
+    return messages[code] || messages.SAVE_FAILED;
+}
+
+const settingsSaveUsernameBtn = document.getElementById('settings-save-username-btn');
+if (settingsSaveUsernameBtn) {
+    settingsSaveUsernameBtn.addEventListener('click', async() => {
+        const lang = currentSettings.lang || 'th';
+        const username = document.getElementById('settings-username-input').value.trim();
+        const currentPassword = document.getElementById('settings-username-current-password').value;
+        const result = await window.api.changeUsername({ username, currentPassword });
+        if (!result?.success) {
+            alert(credentialErrorMessage(result?.error, lang));
             return;
         }
-
         currentSettings.username = username;
-        currentSettings.password = password;
-        await persistSettings();
+        alert(lang === 'th' ? 'เปลี่ยนชื่อผู้ใช้แล้ว กรุณาเข้าสู่ระบบอีกครั้ง' : 'Username changed. Sign in again.');
+        logoutAfterCredentialChange();
+    });
+}
 
-        const msg = document.getElementById('settings-auth-success-msg');
-        if (msg) {
-            msg.classList.remove('hidden');
-            setTimeout(() => msg.classList.add('hidden'), 3000);
+const settingsSavePasswordBtn = document.getElementById('settings-save-password-btn');
+if (settingsSavePasswordBtn) {
+    settingsSavePasswordBtn.addEventListener('click', async() => {
+        const lang = currentSettings.lang || 'th';
+        const currentPassword = document.getElementById('settings-password-current').value;
+        const newPassword = document.getElementById('settings-password-new').value;
+        const confirmPassword = document.getElementById('settings-password-confirm').value;
+        if (newPassword !== confirmPassword) {
+            alert(lang === 'th' ? 'รหัสผ่านใหม่ทั้งสองช่องไม่ตรงกัน' : 'The new passwords do not match.');
+            return;
         }
+        const result = await window.api.changePassword({ currentPassword, newPassword });
+        if (!result?.success) {
+            alert(credentialErrorMessage(result?.error, lang));
+            return;
+        }
+        alert(lang === 'th' ? 'เปลี่ยนรหัสผ่านแล้ว กรุณาเข้าสู่ระบบอีกครั้ง' : 'Password changed. Sign in again.');
+        logoutAfterCredentialChange();
     });
 }
 
@@ -3033,7 +3855,7 @@ function openVisitHistoryModal(patient) {
             const tr = document.createElement('tr');
 
             const tdDate = document.createElement('td');
-            tdDate.textContent = `${visit.date} ${visit.time || ''}`;
+            tdDate.textContent = `${formatDisplayDate(visit.date)} ${visit.time || ''}`;
             tr.appendChild(tdDate);
 
             const tdSymptoms = document.createElement('td');
@@ -3079,6 +3901,7 @@ function openVisitHistoryModal(patient) {
                         symptoms: visit.symptoms,
                         diagnosis: visit.diagnosis,
                         treatment: visit.treatment || '',
+                        advice: visit.advice || '',
                         prescriptions: visit.prescriptions || [],
                         visitDate: visit.date,
                         visitTime: visit.time
@@ -3105,7 +3928,7 @@ function openVisitDetailsModal(visit, patient) {
 
     document.getElementById('detail-patient-hn').textContent = patient.hn;
     document.getElementById('detail-patient-name').textContent = patient.name;
-    document.getElementById('detail-visit-date').textContent = visit.date;
+    document.getElementById('detail-visit-date').textContent = formatDisplayDate(visit.date);
     document.getElementById('detail-visit-time').textContent = visit.time || '-';
 
     const vitals = visit.vitals || {};
@@ -3123,6 +3946,26 @@ function openVisitDetailsModal(visit, patient) {
     document.getElementById('detail-pe').textContent = visit.pe || '-';
     document.getElementById('detail-diagnosis').textContent = visit.diagnosis || '-';
     document.getElementById('detail-treatment').textContent = visit.treatment || '-';
+    document.getElementById('detail-advice').textContent = visit.advice || '-';
+
+    const prescriptionsContainer = document.getElementById('detail-prescriptions');
+    prescriptionsContainer.innerHTML = '';
+    const prescriptionItems = Array.isArray(visit.prescriptions) ? visit.prescriptions : [];
+    if (prescriptionItems.length === 0) {
+        prescriptionsContainer.textContent = '-';
+    } else {
+        prescriptionItems.forEach(item => {
+            const product = products.find(entry => entry.id === item.productId);
+            const row = document.createElement('div');
+            row.className = 'detail-prescription-row';
+            const name = document.createElement('strong');
+            name.textContent = `${product?.name || item.productId || '-'} × ${item.quantity || 0}`;
+            const instructions = document.createElement('span');
+            instructions.textContent = item.instructions || ((currentSettings.lang || 'th') === 'th' ? 'ไม่ได้ระบุวิธีใช้' : 'No directions recorded');
+            row.append(name, instructions);
+            prescriptionsContainer.appendChild(row);
+        });
+    }
 
     const reprintBtn = document.getElementById('detail-print-btn');
     const isTh = (currentSettings.lang || 'th') === 'th';
@@ -3138,6 +3981,7 @@ function openVisitDetailsModal(visit, patient) {
                 symptoms: visit.symptoms,
                 diagnosis: visit.diagnosis,
                 treatment: visit.treatment || '',
+                advice: visit.advice || '',
                 prescriptions: visit.prescriptions || [],
                 visitDate: visit.date,
                 visitTime: visit.time
@@ -3358,7 +4202,10 @@ const settingsCheckUpdateBtn = document.getElementById('settings-check-update-bt
 const currentVersionSpan = document.getElementById('settings-current-version');
 
 if (currentVersionSpan) {
-    currentVersionSpan.textContent = '1.0.0'; // Hardcoded app version matching package.json
+    currentVersionSpan.textContent = '…';
+    window.api?.getAppVersion?.().then(version => {
+        currentVersionSpan.textContent = version || '-';
+    });
 }
 
 let updateInfo = null;
@@ -3374,6 +4221,7 @@ if (updateCancelBtn) {
 if (window.api && window.api.onUpdateAvailable) {
     // Handle update available
     window.api.onUpdateAvailable((info) => {
+        if (settingsCheckUpdateBtn) settingsCheckUpdateBtn.disabled = false;
         updateInfo = info;
         const version = info.version || 'Unknown';
         const notes = info.releaseNotes || 'ไม่มีบันทึกการเปลี่ยนแปลงสำหรับรุ่นนี้ (No release notes available.)';
@@ -3390,6 +4238,17 @@ if (window.api && window.api.onUpdateAvailable) {
 
         updateModal.classList.remove('hidden');
     });
+
+    if (window.api.onUpdateNotAvailable) {
+        window.api.onUpdateNotAvailable(info => {
+            if (settingsCheckUpdateBtn) settingsCheckUpdateBtn.disabled = false;
+            if (info?.manual) {
+                alert((currentSettings.lang || 'th') === 'th'
+                    ? 'โปรแกรมเป็นเวอร์ชันล่าสุดแล้ว'
+                    : 'The application is up to date.');
+            }
+        });
+    }
 
     // Handle progress
     window.api.onUpdateProgress((progressObj) => {
@@ -3437,15 +4296,19 @@ if (window.api && window.api.onUpdateAvailable) {
     // Check updates manually from settings card
     if (settingsCheckUpdateBtn) {
         settingsCheckUpdateBtn.addEventListener('click', async() => {
-            // Trigger dev simulate hook in dev mode, or just log
-            if (window.api.simulateUpdateCheck) {
-                const simulated = await window.api.simulateUpdateCheck();
-                if (simulated) {
-                    console.log('Simulating update check in development mode...');
-                    return;
-                }
+            settingsCheckUpdateBtn.disabled = true;
+            const result = await window.api.checkForUpdates();
+            if (result?.development) {
+                settingsCheckUpdateBtn.disabled = false;
+                alert((currentSettings.lang || 'th') === 'th'
+                    ? 'การตรวจอัปเดตจริงใช้งานเมื่อเปิดโปรแกรมที่ติดตั้งแล้ว'
+                    : 'Update checks are available in the installed application.');
+            } else if (!result?.success) {
+                settingsCheckUpdateBtn.disabled = false;
+                alert((currentSettings.lang || 'th') === 'th'
+                    ? `ตรวจอัปเดตไม่ได้: ${result?.error || 'กรุณาลองอีกครั้ง'}`
+                    : `Update check failed: ${result?.error || 'Try again.'}`);
             }
-            alert('ระบบจะทำการตรวจสอบข้อมูลอัปเดตอัตโนมัติจากเซิร์ฟเวอร์');
         });
     }
 } else {
