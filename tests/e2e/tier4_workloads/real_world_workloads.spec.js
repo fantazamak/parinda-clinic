@@ -177,6 +177,9 @@ test.describe('Real World Workloads', () => {
       ];
     });
 
+    // Reload after seeding so the renderer reads the updated sandbox DB deterministically.
+    await page.reload();
+
     await loginPage.login('admin', 'med1234');
 
     await dashboardPage.filterByDateRange(rangeStart, rangeEnd);
