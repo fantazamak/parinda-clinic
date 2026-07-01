@@ -21,6 +21,7 @@
   "build": {
     "appId": "com.parindaclinic.app",
     "productName": "Parinda Clinic",
+    "artifactName": "Parinda.Clinic.Setup.${version}.${ext}",
     "npmRebuild": false,
     "publish": [
       {
